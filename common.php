@@ -355,4 +355,19 @@ trait StubsCommonLib
         $this->SendDebug(__FUNCTION__, implode(', ', $m), 0);
         return $s;
     }
+
+    private function GetInformationForm()
+    {
+        $form = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Information',
+            'items'   => [
+                [
+                    'type'    => 'Label',
+                    'caption' => $this->InstanceInfo($this->InstanceID),
+                ],
+            ],
+        ];
+        return $form;
+    }
 }
