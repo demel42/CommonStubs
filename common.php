@@ -68,24 +68,13 @@ trait StubsCommonLib
                     $n = isset($a['Name']) ? $a['Name'] : '';
                     $i = isset($a['Icon']) ? $a['Icon'] : '';
                     $f = isset($a['Farbe']) ? $a['Farbe'] : 0;
+                    if (preg_match('/^(#|0x)([0-9A-Za-z]+)$/', (string) $f, $r) == true) {
+                        $f = hexdec($r[2]);
+                    }
                     IPS_SetVariableProfileAssociation($Name, $w, $n, $i, $f);
                 }
             }
         }
-    }
-
-    private function GetArrayElem($data, $var, $dflt)
-    {
-        $ret = $data;
-        $vs = explode('.', $var);
-        foreach ($vs as $v) {
-            if (!isset($ret[$v])) {
-                $ret = $dflt;
-                break;
-            }
-            $ret = $ret[$v];
-        }
-        return $ret;
     }
 
     // inspired by Nall-chan
@@ -176,6 +165,25 @@ trait StubsCommonLib
         IPS_SetMediaContent($mediaID, base64_encode($data));
     }
 
+    private function HookIsUsed($newHook)
+    {
+        $this->SendDebug(__FUNCTION__, 'newHook=' . $newHook, 0);
+        $used = false;
+        $instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
+        $hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
+        $this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
+        foreach ($hooks as $hook) {
+            if ($hook['Hook'] == $newHook) {
+                if ($hook['TargetID'] != $this->InstanceID) {
+                    $used = true;
+                }
+                break;
+            }
+        }
+        $this->SendDebug(__FUNCTION__, 'used=' . $this->bool2str($used), 0);
+        return $used;
+    }
+
     private function RegisterHook($WebHook)
     {
         $this->SendDebug(__FUNCTION__, 'WebHook=' . $WebHook, 0);
@@ -222,12 +230,69 @@ trait StubsCommonLib
         return 'text/plain';
     }
 
+    private function AdjustAction($Ident, $Mode)
+    {
+        @$varID = $this->GetIDForIdent($Ident);
+        if ($varID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $Ident, 0);
+            return false;
+        }
+
+        $v = IPS_GetVariable($varID);
+        $oldMode = $v['VariableAction'] != 0;
+
+        $this->SendDebug(__FUNCTION__, 'MaintainAction(' . $Ident . ', ' . $this->bool2str($Mode) . ')', 0);
+        $this->MaintainAction($Ident, $Mode);
+
+        return $oldMode != $Mode;
+    }
+
+    private function GetArrayElem($data, $var, $dflt)
+    {
+        $ret = $data;
+        $vs = explode('.', $var);
+        foreach ($vs as $v) {
+            if (!isset($ret[$v])) {
+                $ret = $dflt;
+                break;
+            }
+            $ret = $ret[$v];
+        }
+        return $ret;
+    }
+
     private function bool2str($bval)
     {
         if (is_bool($bval)) {
             return $bval ? 'true' : 'false';
         }
         return $bval;
+    }
+
+    private function LimitOutput($str, $maxLength = null)
+    {
+        $lim = IPS_GetOption('ScriptOutputBufferLimit');
+        if (is_null($maxLength)) {
+            $maxLength = intval($lim / 10);
+        } elseif ($maxLength == 0) {
+            $maxLength = $lim - 1024;
+        } elseif ($maxLength < 0) {
+            $maxLength = $lim - $maxLength;
+        } elseif ($maxLength > $lim) {
+            $maxLength = $lim;
+        }
+
+        if (is_array($str)) {
+            $str = print_r($str, true);
+        }
+
+        $len = strlen($str);
+        if ($len > $maxLength) {
+            $s = '»[cut=' . $maxLength . '/' . $len . ']';
+            $cutLen = $maxLength - strlen($s);
+            $str = substr($str, 0, $cutLen) . $s;
+        }
+        return $str;
     }
 
     public function GetConfigurationForm()
@@ -244,6 +309,14 @@ trait StubsCommonLib
             $this->SendDebug(__FUNCTION__, '=> formStatus=' . print_r($formStatus, true), 0);
         }
         return $form;
+    }
+
+    private function GetConnectionID()
+    {
+        $inst = IPS_GetInstance($this->InstanceID);
+        $cID = $inst['ConnectionID'];
+
+        return $cID;
     }
 
     private function GetStatusText()
