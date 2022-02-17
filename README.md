@@ -29,12 +29,9 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 <br>
 
 - mixed GetArrayElem(array $data, string $var, mixed $dflt)<br>
-<br>
-
 - string LimitOutput(string $str, int $maxLength = null)<br>
-<br>
-
 - string bool2str(bool $bval)<br>
+- string HttpCode2Text(int $code)<br>
 <br>
 
 - string GetConfigurationForm()<br>
