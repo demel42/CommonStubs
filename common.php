@@ -4,74 +4,71 @@ declare(strict_types=1);
 
 trait StubsCommonLib
 {
-    protected function SetValue($Ident, $Value)
+    protected function SetValue($ident, $value)
     {
-        @$varID = $this->GetIDForIdent($Ident);
+        @$varID = $this->GetIDForIdent($ident);
         if ($varID == false) {
-            $this->SendDebug(__FUNCTION__, 'missing variable ' . $Ident, 0);
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return;
         }
 
-        @$ret = parent::SetValue($Ident, $Value);
+        @$ret = parent::SetValue($ident, $value);
         if ($ret == false) {
-            $this->SendDebug(__FUNCTION__, 'mismatch of value "' . $Value . '" for variable ' . $Ident, 0);
+            $this->SendDebug(__FUNCTION__, 'mismatch of value "' . $value . '" for variable ' . $ident, 0);
         }
     }
 
-    private function SaveValue($Ident, $Value, &$IsChanged)
+    private function SaveValue(string $ident, $value, bool &$IsChanged)
     {
-        @$varID = $this->GetIDForIdent($Ident);
+        @$varID = $this->GetIDForIdent($ident);
         if ($varID == false) {
-            $this->SendDebug(__FUNCTION__, 'missing variable ' . $Ident, 0);
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return;
         }
 
-        if (parent::GetValue($Ident) != $Value) {
+        if (parent::GetValue($ident) != $value) {
             $IsChanged = true;
         }
 
-        @$ret = parent::SetValue($Ident, $Value);
+        @$ret = parent::SetValue($ident, $value);
         if ($ret == false) {
-            $this->SendDebug(__FUNCTION__, 'mismatch of value "' . $Value . '" for variable ' . $Ident, 0);
+            $this->SendDebug(__FUNCTION__, 'mismatch of value "' . $value . '" for variable ' . $ident, 0);
             return;
         }
     }
 
-    protected function GetValue($Ident)
+    protected function GetValue($ident)
     {
-        @$varID = $this->GetIDForIdent($Ident);
+        @$varID = $this->GetIDForIdent($ident);
         if ($varID == false) {
-            $this->SendDebug(__FUNCTION__, 'missing variable ' . $Ident, 0);
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return false;
         }
 
-        $ret = parent::GetValue($Ident);
+        $ret = parent::GetValue($ident);
         return $ret;
     }
 
-    private function CreateVarProfile($Name, $ProfileType, $Suffix, $MinValue, $MaxValue, $StepSize, $Digits, $Icon, $Associations = '', $doReinstall)
+    private function CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, array $associations = null, bool $doReinstall)
     {
-        if ($doReinstall && IPS_VariableProfileExists($Name)) {
-            IPS_DeleteVariableProfile($Name);
+        if ($doReinstall && IPS_VariableProfileExists($ident)) {
+            IPS_DeleteVariableProfile($ident);
         }
-        if (!IPS_VariableProfileExists($Name)) {
-            IPS_CreateVariableProfile($Name, $ProfileType);
-            IPS_SetVariableProfileText($Name, '', $Suffix);
-            if (in_array($ProfileType, [VARIABLETYPE_INTEGER, VARIABLETYPE_FLOAT])) {
-                IPS_SetVariableProfileValues($Name, $MinValue, $MaxValue, $StepSize);
-                IPS_SetVariableProfileDigits($Name, $Digits);
+        if (!IPS_VariableProfileExists($ident)) {
+            IPS_CreateVariableProfile($ident, $varType);
+            IPS_SetVariableProfileText($ident, '', $suffix);
+            if (in_array($varType, [VARIABLETYPE_INTEGER, VARIABLETYPE_FLOAT])) {
+                IPS_SetVariableProfileValues($ident, $min, $max, $stepSize);
+                IPS_SetVariableProfileDigits($ident, $digits);
             }
-            IPS_SetVariableProfileIcon($Name, $Icon);
-            if ($Associations != '') {
-                foreach ($Associations as $a) {
+            IPS_SetVariableProfileIcon($ident, $icon);
+            if ($associations != null) {
+                foreach ($associations as $a) {
                     $w = isset($a['Wert']) ? $a['Wert'] : '';
                     $n = isset($a['Name']) ? $a['Name'] : '';
                     $i = isset($a['Icon']) ? $a['Icon'] : '';
                     $f = isset($a['Farbe']) ? $a['Farbe'] : 0;
-                    if (preg_match('/^(#|0x)([0-9A-Za-z]+)$/', (string) $f, $r) == true) {
-                        $f = hexdec($r[2]);
-                    }
-                    IPS_SetVariableProfileAssociation($Name, $w, $n, $i, $f);
+                    IPS_SetVariableProfileAssociation($ident, $w, $n, $i, $f);
                 }
             }
         }
@@ -79,101 +76,101 @@ trait StubsCommonLib
 
     // inspired by Nall-chan
     //   https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23a0de51bb3fbc114cefc3acf23c27a14/libs/SqueezeBoxTraits.php
-    public function __get($name)
+    public function __get(string $ident)
     {
-        $n = strpos($name, 'Multi_');
-        if (strpos($name, 'Multi_') === 0) {
-            $curCount = $this->GetBuffer('BufferCount_' . $name);
+        $n = strpos($ident, 'Multi_');
+        if (strpos($ident, 'Multi_') === 0) {
+            $curCount = $this->GetBuffer('BufferCount_' . $ident);
             if ($curCount == false) {
                 $curCount = 0;
             }
             $data = '';
             for ($i = 0; $i < $curCount; $i++) {
-                $data .= $this->GetBuffer('BufferPart' . $i . '_' . $name);
+                $data .= $this->GetBuffer('BufferPart' . $i . '_' . $ident);
             }
         } else {
-            $data = $this->GetBuffer($name);
+            $data = $this->GetBuffer($ident);
         }
         return unserialize($data);
     }
 
-    public function __set($name, $value)
+    public function __set(string $ident, string $value)
     {
         $data = serialize($value);
-        $n = strpos($name, 'Multi_');
-        if (strpos($name, 'Multi_') === 0) {
-            $oldCount = $this->GetBuffer('BufferCount_' . $name);
+        $n = strpos($ident, 'Multi_');
+        if (strpos($ident, 'Multi_') === 0) {
+            $oldCount = $this->GetBuffer('BufferCount_' . $ident);
             if ($oldCount == false) {
                 $oldCount = 0;
             }
             $parts = str_split($data, 8000);
             $newCount = count($parts);
-            $this->SetBuffer('BufferCount_' . $name, $newCount);
+            $this->SetBuffer('BufferCount_' . $ident, $newCount);
             for ($i = 0; $i < $newCount; $i++) {
-                $this->SetBuffer('BufferPart' . $i . '_' . $name, $parts[$i]);
+                $this->SetBuffer('BufferPart' . $i . '_' . $ident, $parts[$i]);
             }
             for ($i = $newCount; $i < $oldCount; $i++) {
-                $this->SetBuffer('BufferPart' . $i . '_' . $name, '');
+                $this->SetBuffer('BufferPart' . $i . '_' . $ident, '');
             }
         } else {
-            $this->SetBuffer($name, $data);
+            $this->SetBuffer($ident, $data);
         }
     }
 
-    private function SetMultiBuffer($name, $value)
+    private function SetMultiBuffer(string $ident, string $value)
     {
-        $this->{'Multi_' . $name} = $value;
+        $this->{'Multi_' . $ident} = $value;
     }
 
-    private function GetMultiBuffer($name)
+    private function GetMultiBuffer(string $ident)
     {
-        $value = $this->{'Multi_' . $name};
+        $value = $this->{'Multi_' . $ident};
         return $value;
     }
 
-    private function GetMediaData($Name)
+    private function GetMediaData(string $ident)
     {
-        $mediaName = $this->Translate($Name);
+        $mediaName = $this->Translate($ident);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
-            $this->SendDebug(__FUNCTION__, 'missing media-object ' . $Name, 0);
+            $this->SendDebug(__FUNCTION__, 'missing media-object ' . $ident, 0);
             return false;
         }
         $data = base64_decode(IPS_GetMediaContent($mediaID));
         return $data;
     }
 
-    private function SetMediaData($Name, $data, $Mediatyp, $Extension, $Cached)
+    private function SetMediaData(string $ident, string $data, int $mediatyp, string $extension, bool $cached)
     {
         $n = strlen(base64_encode($data));
-        $this->SendDebug(__FUNCTION__, 'write ' . $n . ' bytes to media-object ' . $Name, 0);
-        $mediaName = $this->Translate($Name);
+        $this->SendDebug(__FUNCTION__, 'write ' . $n . ' bytes to media-object ' . $ident, 0);
+        $mediaName = $this->Translate($ident);
         @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
         if ($mediaID == false) {
             $mediaID = IPS_CreateMedia($Mediatyp);
             if ($mediaID == false) {
-                $this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $Name, 0);
+                $this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $ident, 0);
                 return false;
             }
-            $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $Name . $Extension;
+            $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
             IPS_SetMediaFile($mediaID, $filename, false);
             IPS_SetName($mediaID, $mediaName);
             IPS_SetParent($mediaID, $this->InstanceID);
-            $this->SendDebug(__FUNCTION__, 'media-object ' . $Name . ' created, filename=' . $filename, 0);
+            $this->SendDebug(__FUNCTION__, 'media-object ' . $ident . ' created, filename=' . $filename, 0);
         }
-        IPS_SetMediaCached($mediaID, $Cached);
+        IPS_SetMediaCached($mediaID, $cached);
         IPS_SetMediaContent($mediaID, base64_encode($data));
     }
 
-    private function HookIsUsed($newHook)
+    private function HookIsUsed(string $ident)
     {
-        $this->SendDebug(__FUNCTION__, 'newHook=' . $newHook, 0);
+        $this->SendDebug(__FUNCTION__, 'newHook=' . $ident, 0);
         $used = false;
         $instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
         $hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
         $this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
         foreach ($hooks as $hook) {
-            if ($hook['Hook'] == $newHook) {
+            if ($hook['Hook'] == $ident) {
                 if ($hook['TargetID'] != $this->InstanceID) {
                     $used = true;
                 }
@@ -184,16 +181,16 @@ trait StubsCommonLib
         return $used;
     }
 
-    private function RegisterHook($WebHook)
+    private function RegisterHook(string $ident)
     {
-        $this->SendDebug(__FUNCTION__, 'WebHook=' . $WebHook, 0);
+        $this->SendDebug(__FUNCTION__, 'WebHook=' . $ident, 0);
         $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
             $this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
             $found = false;
             foreach ($hooks as $index => $hook) {
-                if ($hook['Hook'] == $WebHook) {
+                if ($hook['Hook'] == $ident) {
                     if ($hook['TargetID'] != $this->InstanceID) {
                         $this->SendDebug(__FUNCTION__, 'already exists with foreign TargetID ' . $hook['TargetID'] . ', overwrite with ' . $this->InstanceID, 0);
                         $hooks[$index]['TargetID'] = $this->InstanceID;
@@ -205,7 +202,7 @@ trait StubsCommonLib
                 }
             }
             if (!$found) {
-                $hooks[] = ['Hook' => $WebHook, 'TargetID' => $this->InstanceID];
+                $hooks[] = ['Hook' => $ident, 'TargetID' => $this->InstanceID];
                 $this->SendDebug(__FUNCTION__, 'not found, create with TargetID ' . $this->InstanceID, 0);
             }
             IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
@@ -213,7 +210,7 @@ trait StubsCommonLib
         }
     }
 
-    private function GetMimeType($extension)
+    private function GetMimeType(string $extension)
     {
         $lines = file(IPS_GetKernelDirEx() . 'mime.types');
         foreach ($lines as $line) {
@@ -230,24 +227,24 @@ trait StubsCommonLib
         return 'text/plain';
     }
 
-    private function AdjustAction($Ident, $Mode)
+    private function AdjustAction(string $ident, bool $mode)
     {
-        @$varID = $this->GetIDForIdent($Ident);
+        @$varID = $this->GetIDForIdent($ident);
         if ($varID == false) {
-            $this->SendDebug(__FUNCTION__, 'missing variable ' . $Ident, 0);
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return false;
         }
 
         $v = IPS_GetVariable($varID);
-        $oldMode = $v['VariableAction'] != 0;
+        $oldmode = $v['VariableAction'] != 0;
 
-        $this->SendDebug(__FUNCTION__, 'MaintainAction(' . $Ident . ', ' . $this->bool2str($Mode) . ')', 0);
-        $this->MaintainAction($Ident, $Mode);
+        $this->SendDebug(__FUNCTION__, 'MaintainAction(' . $ident . ', ' . $this->bool2str($mode) . ')', 0);
+        $this->MaintainAction($ident, $mode);
 
-        return $oldMode != $Mode;
+        return $oldmode != $mode;
     }
 
-    private function GetArrayElem($data, $var, $dflt)
+    private function GetArrayElem(array $data, string $var, $dflt)
     {
         $ret = $data;
         $vs = explode('.', $var);
@@ -261,7 +258,7 @@ trait StubsCommonLib
         return $ret;
     }
 
-    private function bool2str($bval)
+    private function bool2str(bool $bval)
     {
         if (is_bool($bval)) {
             return $bval ? 'true' : 'false';
@@ -269,7 +266,7 @@ trait StubsCommonLib
         return $bval;
     }
 
-    private function LimitOutput($str, $maxLength = null)
+    private function LimitOutput(string $str, int $maxLength = null)
     {
         $lim = IPS_GetOption('ScriptOutputBufferLimit');
         if (is_null($maxLength)) {
@@ -295,7 +292,7 @@ trait StubsCommonLib
         return $str;
     }
 
-    private function HttpCode2Text($code)
+    private function HttpCode2Text(int $code)
     {
         $code2text = [
             // 1xx – Information
