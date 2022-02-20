@@ -266,7 +266,7 @@ trait StubsCommonLib
         return $bval;
     }
 
-    private function LimitOutput(string $str, int $maxLength = null)
+    private function LimitOutput($str, int $maxLength = null)
     {
         $lim = IPS_GetOption('ScriptOutputBufferLimit');
         if (is_null($maxLength)) {
