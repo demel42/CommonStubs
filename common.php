@@ -689,7 +689,8 @@ trait StubsCommonLib
             }
         }
 
-        $refs = UC_FindReferences(58898, $instID);
+        $ucID = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}')[0];
+        $refs = UC_FindReferences($ucID, $instID);
         foreach ($refs as $ref) {
             $objID = $ref['ObjectID'];
             $obj = IPS_GetObject($objID);
@@ -722,6 +723,7 @@ trait StubsCommonLib
                     break;
             }
         }
+
         $objIDs = IPS_GetChildrenIDs($instID);
         foreach ($objIDs as $objID) {
             $obj = IPS_GetObject($objID);
@@ -755,10 +757,26 @@ trait StubsCommonLib
         return $r;
     }
 
-    public function ModuleUpdateFormField(string $field, string $param, $value)
+    private function CommonRequestAction(string $ident, $params)
     {
-        $this->SendDebug(__FUNCTION__, 'field=' . $field . ', param=' . $param . ', value=' . $value, 0);
-        $this->UpdateFormField($field, $param, $value);
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
+
+        $r = false;
+        switch ($ident) {
+            case 'UpdateFormField':
+                $jparams = json_decode($params, true);
+                if (isset($jparams['field']) && isset($jparams['param']) && isset($jparams['value'])) {
+                    $this->UpdateFormField($jparams['field'], $jparams['param'], $jparams['value']);
+                    $r = true;
+                } else {
+                    $this->SendDebug(__FUNCTION__, 'params must include field, param, value', 0);
+                }
+                break;
+            default:
+                $this->SendDebug(__FUNCTION__, 'unknown ident ' . $ident, 0);
+                break;
+        }
+        return $r;
     }
 
     private function GetModulePrefix()
@@ -773,8 +791,8 @@ trait StubsCommonLib
         $r = $this->ExplodeReferences($this->InstanceID);
         $this->SendDebug(__FUNCTION__, print_r($r, true), 0);
 
-        $prefix = $this->GetModulePrefix();
-
+        $onClick_ReferencedBy = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_ReferencedBy", "param" => "objectID", "value" => $ReferencedBy["ObjektID"]]));';
+        $onClick_Referencing = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_Referencing", "param" => "objectID", "value" => $Referencing["ObjektID"]]));';
         $form = [
             'type'    => 'ExpansionPanel',
             'caption' => 'References',
@@ -790,19 +808,19 @@ trait StubsCommonLib
                                     'name'     => 'ObjektID',
                                     'width'    => '100px',
                                     'caption'  => 'Object',
-                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_ReferencedBy\', \'objectID\', $ReferencedBy[\'ObjektID\']);',
+                                    'onClick'  => $onClick_ReferencedBy,
                                 ],
                                 [
                                     'name'     => 'area',
                                     'width'    => '200px',
                                     'caption'  => 'Area',
-                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_ReferencedBy\', \'objectID\', $ReferencedBy[\'ObjektID\']);',
+                                    'onClick'  => $onClick_ReferencedBy,
                                 ],
                                 [
                                     'name'     => 'name',
                                     'width'    => 'auto',
                                     'caption'  => 'Name',
-                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_ReferencedBy\', \'objectID\', $ReferencedBy[\'ObjektID\']);',
+                                    'onClick'  => $onClick_ReferencedBy,
                                 ],
                             ],
                             'add'      => false,
@@ -830,19 +848,19 @@ trait StubsCommonLib
                                     'name'     => 'ObjektID',
                                     'width'    => '100px',
                                     'caption'  => 'Object',
-                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_Referencing\', \'objectID\', $Referencing[\'ObjektID\']);',
+                                    'onClick'  => $onClick_Referencing,
                                 ],
                                 [
                                     'name'     => 'area',
                                     'width'    => '200px',
                                     'caption'  => 'Area',
-                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_Referencing\', \'objectID\', $Referencing[\'ObjektID\']);',
+                                    'onClick'  => $onClick_Referencing,
                                 ],
                                 [
                                     'name'     => 'name',
                                     'width'    => 'auto',
                                     'caption'  => 'Name',
-                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_Referencing\', \'objectID\', $Referencing[\'ObjektID\']);',
+                                    'onClick'  => $onClick_Referencing,
                                 ],
                             ],
                             'add'      => false,

@@ -55,12 +55,12 @@ Ergänzung der *locale.json*
 "Information": "Information",
 ```
 
-
 - string ScriptType2Name(int $scriptType)<br>
 - string EventType2Name(int $eventType)<br>
 - string ObjectType2Name(int $objectType)<br>
 
-- void UpdateFormField(string $field, string $param, variant $value)<br>
+- bool CommonRequestAction(string $ident, variant $params)<br>
+
 - string GetModulePrefix()<br>
 
 - array ExplodeReferences(int $instID)<br>
