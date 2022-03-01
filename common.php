@@ -666,7 +666,7 @@ trait StubsCommonLib
                     ];
                     break;
                 case OBJECTTYPE_MEDIA:
-                    $media = IPS_GetMedita($objID);
+                    $media = IPS_GetMedia($objID);
                     $mediaType = $media['MediaType'];
                     $referencing[] = [
                         'ObjektID'   => $objID,
