@@ -762,11 +762,11 @@ trait StubsCommonLib
     }
 
     private function GetModulePrefix()
-	{
+    {
         $inst = IPS_GetInstance($this->InstanceID);
         $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
-		return $mod['Prefix'];
-	}
+        return $mod['Prefix'];
+    }
 
     private function GetReferencesForm()
     {
@@ -862,4 +862,5 @@ trait StubsCommonLib
             ],
         ];
         return $form;
-    } }
+    }
+}
