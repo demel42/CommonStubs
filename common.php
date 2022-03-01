@@ -523,4 +523,343 @@ trait StubsCommonLib
         ];
         return $form;
     }
-}
+
+    private function ScriptType2Name($scriptType)
+    {
+        $map = [
+            SCRIPTTYPE_PHP  => 'PHP script',
+            SCRIPTTYPE_FLOW => 'Flow plan',
+        ];
+
+        if (isset($map[$scriptType])) {
+            return $this->Translate($map[$scriptType]);
+        }
+        return false;
+    }
+
+    private function EventType2Name($eventType)
+    {
+        $map = [
+            EVENTTYPE_TRIGGER  => 'Triggered event',
+            EVENTTYPE_CYCLIC   => 'Cyclic event',
+            EVENTTYPE_SCHEDULE => 'Scheduled event',
+        ];
+
+        if (isset($map[$eventType])) {
+            return $this->Translate($map[$eventType]);
+        }
+        return false;
+    }
+
+    private function ObjectType2Name($objectType)
+    {
+        $map = [
+            OBJECTTYPE_CATEGORY => 'Category',
+            OBJECTTYPE_INSTANCE => 'Instance',
+            OBJECTTYPE_VARIABLE => 'Variable',
+            OBJECTTYPE_SCRIPT   => 'Script',
+            OBJECTTYPE_EVENT    => 'Event',
+            OBJECTTYPE_MEDIA    => 'Medium',
+            OBJECTTYPE_LINK     => 'Link',
+        ];
+
+        if (isset($map[$objectType])) {
+            return $this->Translate($map[$objectType]);
+        }
+        return false;
+    }
+
+    private function cmp_refs($a, $b)
+    {
+        $a_area = $a['area'];
+        $b_area = $b['area'];
+        if ($a_area != $b_area) {
+            return (strcmp($a_area, $b_area) < 0) ? -1 : 1;
+        }
+
+        $a_name = $a['name'];
+        $b_name = $b['name'];
+        if ($a_name != $b_name) {
+            return (strcmp($a_name, $b_name) < 0) ? -1 : 1;
+        }
+
+        $a_id = $a['ObjektID'];
+        $b_id = $b['ObjektID'];
+        return ($a_id < $b_id) ? -1 : 1;
+    }
+
+    private function ExplodeReferences($instID)
+    {
+        $inst = IPS_GetInstance($instID);
+        $moduleID = $inst['ModuleInfo']['ModuleID'];
+
+        $actionIDs = [];
+        $actions = json_decode(IPS_GetActions(), true);
+        foreach ($actions as $action) {
+            if (isset($action['restrictions']['moduleID'])) {
+                foreach ($action['restrictions']['moduleID'] as $mID) {
+                    if ($mID == $moduleID) {
+                        $actionIDs[] = $action['id'];
+                    }
+                }
+            }
+        }
+
+        $referencing = [];
+        $rferencedBy = [];
+
+        $refIDs = IPS_GetReferenceList($instID);
+        foreach ($refIDs as $objID) {
+            $obj = IPS_GetObject($objID);
+            $objectType = $obj['ObjectType'];
+            switch ($objectType) {
+                case OBJECTTYPE_CATEGORY:
+                    $referencing[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'area'       => $this->ObjectType2Name($objectType),
+                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                case OBJECTTYPE_INSTANCE:
+                    $inst = IPS_GetInstance($objID);
+                    $moduleType = $inst['ModuleInfo']['ModuleType'];
+                    $referencing[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'ModuleType' => $moduleType,
+                        'area'       => $this->ObjectType2Name($objectType),
+                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                case OBJECTTYPE_VARIABLE:
+                    $var = IPS_GetVariable($objID);
+                    $variableType = $var['VariableType'];
+                    $referencing[] = [
+                        'ObjektID'     => $objID,
+                        'ObjectType'   => $objectType,
+                        'VariableType' => $variableType,
+                        'area'         => $this->ObjectType2Name($objectType),
+                        'name'         => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                case OBJECTTYPE_SCRIPT:
+                    $script = IPS_GetScript($objID);
+                    $scriptType = $script['ScriptType'];
+                    $referencing[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'ScriptType' => $scriptType,
+                        'area'       => $this->ScriptType2Name($scriptType),
+                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                case OBJECTTYPE_EVENT:
+                    $event = IPS_GetEvent($objID);
+                    $eventType = $event['EventType'];
+                    $referencing[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'EventType'  => $eventType,
+                        'area'       => $this->EventType2Name($eventType),
+                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                case OBJECTTYPE_MEDIA:
+                    $media = IPS_GetMedita($objID);
+                    $mediaType = $media['MediaType'];
+                    $referencing[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'MediaType'  => $mediaType,
+                        'area'       => $this->ObjectType2Name($objectType),
+                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                case OBJECTTYPE_LINK:
+                    $referencing[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'area'       => $this->ObjectType2Name($objectType),
+                        'name'       => IPS_GetName($objID),
+                    ];
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $refs = UC_FindReferences(58898, $instID);
+        foreach ($refs as $ref) {
+            $objID = $ref['ObjectID'];
+            $obj = IPS_GetObject($objID);
+            $objectType = $obj['ObjectType'];
+            switch ($objectType) {
+                case OBJECTTYPE_INSTANCE:
+                    $inst = IPS_GetInstance($objID);
+                    $moduleType = $inst['ModuleInfo']['ModuleType'];
+                    $rferencedBy[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'ModuleType' => $moduleType,
+                        'area'       => $this->ObjectType2Name($objectType),
+                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                case OBJECTTYPE_SCRIPT:
+                    $script = IPS_GetScript($objID);
+                    $scriptType = $script['ScriptType'];
+                    $rferencedBy[] = [
+                        'ObjektID'   => $objID,
+                        'ObjectType' => $objectType,
+                        'ScriptType' => $scriptType,
+                        'area'       => $this->ScriptType2Name($scriptType),
+                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                    ];
+                    break;
+                default:
+                    $this->SendDebug(__FUNCTION__, 'un┬andled object=' . print_r($obj, true), 0);
+                    break;
+            }
+        }
+        $objIDs = IPS_GetChildrenIDs($instID);
+        foreach ($objIDs as $objID) {
+            $obj = IPS_GetObject($objID);
+            $objectType = $obj['ObjectType'];
+            if ($objectType != OBJECTTYPE_EVENT) {
+                continue;
+            }
+            $event = IPS_GetEvent($objID);
+            $eventActionID = $event['EventActionID'];
+            if (in_array($eventActionID, $actionIDs) == false) {
+                continue;
+            }
+            $eventType = $event['EventType'];
+            $rferencedBy[] = [
+                'ObjektID'   => $objID,
+                'ObjectType' => $objectType,
+                'EventType'  => $eventType,
+                'area'       => $this->EventType2Name($eventType),
+                'name'       => IPS_GetName($objID),
+            ];
+        }
+
+        usort($referencing, [__CLASS__, 'cmp_refs']);
+        usort($rferencedBy, [__CLASS__, 'cmp_refs']);
+
+        $r = [
+            'Referencing'  => $referencing,
+            'ReferencedBy' => $rferencedBy,
+        ];
+
+        return $r;
+    }
+
+    public function ModuleUpdateFormField(string $field, string $param, $value)
+    {
+        $this->SendDebug(__FUNCTION__, 'field=' . $field . ', param=' . $param . ', value=' . $value, 0);
+        $this->UpdateFormField($field, $param, $value);
+    }
+
+    private function GetModulePrefix()
+	{
+        $inst = IPS_GetInstance($this->InstanceID);
+        $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
+		return $mod['Prefix'];
+	}
+
+    private function GetReferencesForm()
+    {
+        $r = $this->ExplodeReferences($this->InstanceID);
+        $this->SendDebug(__FUNCTION__, print_r($r, true), 0);
+
+        $prefix = $this->GetModulePrefix();
+
+        $form = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'References',
+            'items'   => [
+                [
+                    'type'    => 'ColumnLayout',
+                    'items'   => [
+                        [
+                            'type'     => 'List',
+                            'name'     => 'ReferencedBy',
+                            'columns'  => [
+                                [
+                                    'name'     => 'ObjektID',
+                                    'width'    => '100px',
+                                    'caption'  => 'Object',
+                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_ReferencedBy\', \'objectID\', $ReferencedBy[\'ObjektID\']);',
+                                ],
+                                [
+                                    'name'     => 'area',
+                                    'width'    => '200px',
+                                    'caption'  => 'Area',
+                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_ReferencedBy\', \'objectID\', $ReferencedBy[\'ObjektID\']);',
+                                ],
+                                [
+                                    'name'     => 'name',
+                                    'width'    => 'auto',
+                                    'caption'  => 'Name',
+                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_ReferencedBy\', \'objectID\', $ReferencedBy[\'ObjektID\']);',
+                                ],
+                            ],
+                            'add'      => false,
+                            'delete'   => false,
+                            'rowCount' => count($r['ReferencedBy']),
+                            'values'   => $r['ReferencedBy'],
+                            'caption'  => 'Objects using the instance',
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'objectID' => isset($r['ReferencedBy'][0]['ObjektID']) ? $r['ReferencedBy'][0]['ObjektID'] : 0,
+                            'name'     => 'openObject_ReferencedBy',
+                            'caption'  => 'Open object',
+                        ],
+                    ],
+                ],
+                [
+                    'type'    => 'ColumnLayout',
+                    'items'   => [
+                        [
+                            'type'     => 'List',
+                            'name'     => 'Referencing',
+                            'columns'  => [
+                                [
+                                    'name'     => 'ObjektID',
+                                    'width'    => '100px',
+                                    'caption'  => 'Object',
+                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_Referencing\', \'objectID\', $Referencing[\'ObjektID\']);',
+                                ],
+                                [
+                                    'name'     => 'area',
+                                    'width'    => '200px',
+                                    'caption'  => 'Area',
+                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_Referencing\', \'objectID\', $Referencing[\'ObjektID\']);',
+                                ],
+                                [
+                                    'name'     => 'name',
+                                    'width'    => 'auto',
+                                    'caption'  => 'Name',
+                                    'onClick'  => $prefix . '_ModuleUpdateFormField($id, \'openObject_Referencing\', \'objectID\', $Referencing[\'ObjektID\']);',
+                                ],
+                            ],
+                            'add'      => false,
+                            'delete'   => false,
+                            'rowCount' => count($r['Referencing']),
+                            'values'   => $r['Referencing'],
+                            'caption'  => 'by instance used objects',
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'objectID' => isset($r['Referencing'][0]['ObjektID']) ? $r['Referencing'][0]['ObjektID'] : 0,
+                            'name'     => 'openObject_Referencing',
+                            'caption'  => 'Open object',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        return $form;
+    } }

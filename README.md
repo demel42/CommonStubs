@@ -47,5 +47,44 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 - int GetConnectionID()<br>
 <br>
 
-- void InstanceInfo(int $instID)<br>
+- string InstanceInfo(int $instID)<br>
 - array GetInformationForm()<br>
+
+Ergänzung der *locale.json*
+```
+"Information": "Information",
+```
+
+
+- string ScriptType2Name(int $scriptType)<br>
+- string EventType2Name(int $eventType)<br>
+- string ObjectType2Name(int $objectType)<br>
+
+- void UpdateFormField(string $field, string $param, variant $value)<br>
+- string GetModulePrefix()<br>
+
+- array ExplodeReferences(int $instID)<br>
+- array GetReferencesForm()<br>
+
+Ergänzung der *locale.json*
+```
+"Category": "Kategorie",
+"Instance": "Instanz",
+"Variable": "Variable",
+"Script": "Skript",
+"Event": "Ereignis",
+"Medium": "Medium",
+"Link": "Verknüpfung",
+"PHP script": "PHP-Skript",
+"Flow plan": "Ablaufplan",
+"Triggered event": "Ausgelöstes Ereignis",
+"Cyclic event": "Zyklisches Ereignis",
+"Scheduled event": "Geplantes Ereignis",
+"References": "Referenzen",
+"by instance used objects": "durch die Instanz verwendete Objekte",
+"Objects using the instance": "Objekte, die die Instanz verwenden",
+"Object": "Objekt",
+"Area": "Bereich",
+"Name": "Bezeichnung",
+"Open object": "Objekt öffnen",
+```
