@@ -130,8 +130,8 @@ trait StubsCommonLib
 
     private function GetMediaData(string $ident)
     {
-        $mediaName = $this->Translate($ident);
-        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
+        $name = $this->Translate($ident);
+        @$mediaID = IPS_GetMediaIDByName($name, $this->InstanceID);
         if ($mediaID == false) {
             $this->SendDebug(__FUNCTION__, 'missing media-object ' . $ident, 0);
             return false;
@@ -144,17 +144,17 @@ trait StubsCommonLib
     {
         $n = strlen(base64_encode($data));
         $this->SendDebug(__FUNCTION__, 'write ' . $n . ' bytes to media-object ' . $ident, 0);
-        $mediaName = $this->Translate($ident);
-        @$mediaID = IPS_GetMediaIDByName($mediaName, $this->InstanceID);
+        $name = $this->Translate($ident);
+        @$mediaID = IPS_GetMediaIDByName($name, $this->InstanceID);
         if ($mediaID == false) {
-            $mediaID = IPS_CreateMedia($Mediatyp);
+            $mediaID = IPS_CreateMedia($mediatyp);
             if ($mediaID == false) {
                 $this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $ident, 0);
                 return false;
             }
             $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
             IPS_SetMediaFile($mediaID, $filename, false);
-            IPS_SetName($mediaID, $mediaName);
+            IPS_SetName($mediaID, $name);
             IPS_SetParent($mediaID, $this->InstanceID);
             $this->SendDebug(__FUNCTION__, 'media-object ' . $ident . ' created, filename=' . $filename, 0);
         }
