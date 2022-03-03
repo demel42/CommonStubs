@@ -571,21 +571,21 @@ trait StubsCommonLib
 
     private function cmp_refs($a, $b)
     {
-        $a_area = $a['area'];
-        $b_area = $b['area'];
-        if ($a_area != $b_area) {
-            return (strcmp($a_area, $b_area) < 0) ? -1 : 1;
+        if (isset($a['VariableIdent']) && isset($b['VariableIdent'])) {
+            if ($a['VariableIdent'] != $b['VariableIdent']) {
+                return (strcmp($a['VariableIdent'], $b['VariableIdent']) < 0) ? -1 : 1;
+            }
         }
 
-        $a_name = $a['name'];
-        $b_name = $b['name'];
-        if ($a_name != $b_name) {
-            return (strcmp($a_name, $b_name) < 0) ? -1 : 1;
+        if ($a['ObjectArea'] != $b['ObjectArea']) {
+            return (strcmp($a['ObjectArea'], $b['ObjectArea']) < 0) ? -1 : 1;
         }
 
-        $a_id = $a['ObjektID'];
-        $b_id = $b['ObjektID'];
-        return ($a_id < $b_id) ? -1 : 1;
+        if ($a['ObjectName'] != $b['ObjectName']) {
+            return (strcmp($a['ObjectName'], $b['ObjectName']) < 0) ? -1 : 1;
+        }
+
+        return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
     }
 
     private function ExplodeReferences($instID)
@@ -596,7 +596,7 @@ trait StubsCommonLib
         $actionIDs = [];
         $actions = json_decode(IPS_GetActions(), true);
         foreach ($actions as $action) {
-            if (isset($action['restrictions']['moduleID'])) {
+            if (isset($action['restrictions']['moduleID']) && is_array($action['restrictions']['moduleID'])) {
                 foreach ($action['restrictions']['moduleID'] as $mID) {
                     if ($mID == $moduleID) {
                         $actionIDs[] = $action['id'];
@@ -605,9 +605,10 @@ trait StubsCommonLib
             }
         }
 
-        $referencing = [];
-        $rferencedBy = [];
+        $ucID = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}')[0];
 
+        // von Instanz referenzierte Objekte
+        $referencing = [];
         $refIDs = IPS_GetReferenceList($instID);
         foreach ($refIDs as $objID) {
             $obj = IPS_GetObject($objID);
@@ -617,8 +618,8 @@ trait StubsCommonLib
                     $referencing[] = [
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
-                        'area'       => $this->ObjectType2Name($objectType),
-                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_INSTANCE:
@@ -628,8 +629,8 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'ModuleType' => $moduleType,
-                        'area'       => $this->ObjectType2Name($objectType),
-                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_VARIABLE:
@@ -639,8 +640,8 @@ trait StubsCommonLib
                         'ObjektID'     => $objID,
                         'ObjectType'   => $objectType,
                         'VariableType' => $variableType,
-                        'area'         => $this->ObjectType2Name($objectType),
-                        'name'         => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea'   => $this->ObjectType2Name($objectType),
+                        'ObjectName'   => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_SCRIPT:
@@ -650,8 +651,8 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'ScriptType' => $scriptType,
-                        'area'       => $this->ScriptType2Name($scriptType),
-                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea' => $this->ScriptType2Name($scriptType),
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_EVENT:
@@ -661,8 +662,8 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'EventType'  => $eventType,
-                        'area'       => $this->EventType2Name($eventType),
-                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea' => $this->EventType2Name($eventType),
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_MEDIA:
@@ -672,24 +673,26 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'MediaType'  => $mediaType,
-                        'area'       => $this->ObjectType2Name($objectType),
-                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_LINK:
                     $referencing[] = [
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
-                        'area'       => $this->ObjectType2Name($objectType),
-                        'name'       => IPS_GetName($objID),
+                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectName' => IPS_GetName($objID),
                     ];
                     break;
                 default:
                     break;
             }
         }
+        usort($referencing, [__CLASS__, 'cmp_refs']);
 
-        $ucID = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}')[0];
+        // Instanz referenziert durch
+        $rferencedBy = [];
         $refs = UC_FindReferences($ucID, $instID);
         foreach ($refs as $ref) {
             $objID = $ref['ObjectID'];
@@ -703,8 +706,8 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'ModuleType' => $moduleType,
-                        'area'       => $this->ObjectType2Name($objectType),
-                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_SCRIPT:
@@ -714,8 +717,8 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'ScriptType' => $scriptType,
-                        'area'       => $this->ScriptType2Name($scriptType),
-                        'name'       => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectArea' => $this->ScriptType2Name($scriptType),
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 default:
@@ -723,7 +726,6 @@ trait StubsCommonLib
                     break;
             }
         }
-
         $objIDs = IPS_GetChildrenIDs($instID);
         foreach ($objIDs as $objID) {
             $obj = IPS_GetObject($objID);
@@ -741,17 +743,99 @@ trait StubsCommonLib
                 'ObjektID'   => $objID,
                 'ObjectType' => $objectType,
                 'EventType'  => $eventType,
-                'area'       => $this->EventType2Name($eventType),
-                'name'       => IPS_GetName($objID),
+                'ObjectArea' => $this->EventType2Name($eventType),
+                'ObjectName' => IPS_GetName($objID),
             ];
         }
-
-        usort($referencing, [__CLASS__, 'cmp_refs']);
         usort($rferencedBy, [__CLASS__, 'cmp_refs']);
 
+        // Verwendung der Statusvariablen
+        $rferencedVars = [];
+        $objIDs = IPS_GetChildrenIDs($instID);
+        foreach ($objIDs as $objID) {
+            $obj = IPS_GetObject($objID);
+            $objectType = $obj['ObjectType'];
+            if ($objectType != OBJECTTYPE_VARIABLE) {
+                continue;
+            }
+            if ($obj['ObjectIdent'] == '') {
+                continue;
+            }
+
+            $varID = $objID;
+            $varIdent = $obj['ObjectIdent'];
+            $varName = IPS_GetName($objID);
+
+            $refs = UC_FindReferences($ucID, $objID);
+            foreach ($refs as $ref) {
+                $chldID = $ref['ObjectID'];
+                $chld = IPS_GetObject($chldID);
+                $objectType = $chld['ObjectType'];
+                switch ($objectType) {
+                    case OBJECTTYPE_CATEGORY:
+                        $rferencedVars[] = [
+                            'VariableID'    => $varID,
+                            'VariableIdent' => $varIdent,
+                            'VariableName'  => $varName,
+                            'ObjektID'      => $chldID,
+                            'ObjectType'    => $objectType,
+                            'ObjectArea'    => $this->ObjectType2Name($objectType),
+                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                        ];
+                        break;
+                    case OBJECTTYPE_INSTANCE:
+                        $inst = IPS_GetInstance($chldID);
+                        $moduleType = $inst['ModuleInfo']['ModuleType'];
+                        $rferencedVars[] = [
+                            'VariableID'    => $varID,
+                            'VariableIdent' => $varIdent,
+                            'VariableName'  => $varName,
+                            'ObjektID'      => $chldID,
+                            'ObjectType'    => $objectType,
+                            'ModuleType'    => $moduleType,
+                            'ObjectArea'    => $this->ObjectType2Name($objectType),
+                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                        ];
+                        break;
+                    case OBJECTTYPE_SCRIPT:
+                        $script = IPS_GetScript($chldID);
+                        $scriptType = $script['ScriptType'];
+                        $rferencedVars[] = [
+                            'VariableID'    => $varID,
+                            'VariableIdent' => $varIdent,
+                            'VariableName'  => $varName,
+                            'ObjektID'      => $chldID,
+                            'ObjectType'    => $objectType,
+                            'ScriptType'    => $scriptType,
+                            'ObjectArea'    => $this->ScriptType2Name($scriptType),
+                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                        ];
+                        break;
+                    case OBJECTTYPE_EVENT:
+                        $event = IPS_GetEvent($chldID);
+                        $eventType = $event['EventType'];
+                        $rferencedVars[] = [
+                            'VariableID'    => $varID,
+                            'VariableIdent' => $varIdent,
+                            'VariableName'  => $varName,
+                            'ObjektID'      => $chldID,
+                            'ObjectType'    => $objectType,
+                            'EventType'     => $eventType,
+                            'ObjectArea'    => $this->EventType2Name($eventType),
+                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                        ];
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        usort($rferencedVars, [__CLASS__, 'cmp_refs']);
+
         $r = [
-            'Referencing'  => $referencing,
-            'ReferencedBy' => $rferencedBy,
+            'Referencing'    => $referencing,
+            'ReferencedBy'   => $rferencedBy,
+            'ReferencedVars' => $rferencedVars,
         ];
 
         return $r;
@@ -793,6 +877,11 @@ trait StubsCommonLib
 
         $onClick_ReferencedBy = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_ReferencedBy", "param" => "objectID", "value" => $ReferencedBy["ObjektID"]]));';
         $onClick_Referencing = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_Referencing", "param" => "objectID", "value" => $Referencing["ObjektID"]]));';
+        $onClick_ReferencedVars = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_ReferencedVars", "param" => "objectID", "value" => $ReferencedVars["ObjektID"]]));';
+        $rowCount_ReferencedBy = count($r['ReferencedBy']);
+        $rowCount_Referencing = count($r['Referencing']);
+        $rowCount_ReferencedVars = count($r['ReferencedVars']);
+
         $form = [
             'type'    => 'ExpansionPanel',
             'caption' => 'References',
@@ -811,13 +900,13 @@ trait StubsCommonLib
                                     'onClick'  => $onClick_ReferencedBy,
                                 ],
                                 [
-                                    'name'     => 'area',
+                                    'name'     => 'ObjectArea',
                                     'width'    => '200px',
                                     'caption'  => 'Area',
                                     'onClick'  => $onClick_ReferencedBy,
                                 ],
                                 [
-                                    'name'     => 'name',
+                                    'name'     => 'ObjectName',
                                     'width'    => 'auto',
                                     'caption'  => 'Name',
                                     'onClick'  => $onClick_ReferencedBy,
@@ -825,13 +914,14 @@ trait StubsCommonLib
                             ],
                             'add'      => false,
                             'delete'   => false,
-                            'rowCount' => count($r['ReferencedBy']),
+                            'rowCount' => $rowCount_ReferencedBy > 0 ? $rowCount_ReferencedBy : 1,
                             'values'   => $r['ReferencedBy'],
                             'caption'  => 'Objects using the instance',
                         ],
                         [
                             'type'     => 'OpenObjectButton',
-                            'objectID' => isset($r['ReferencedBy'][0]['ObjektID']) ? $r['ReferencedBy'][0]['ObjektID'] : 0,
+                            'objectID' => $rowCount_ReferencedBy > 0 ? $r['ReferencedBy'][0]['ObjektID'] : 0,
+                            'visible'  => $rowCount_ReferencedBy > 0,
                             'name'     => 'openObject_ReferencedBy',
                             'caption'  => 'Open object',
                         ],
@@ -851,13 +941,13 @@ trait StubsCommonLib
                                     'onClick'  => $onClick_Referencing,
                                 ],
                                 [
-                                    'name'     => 'area',
+                                    'name'     => 'ObjectArea',
                                     'width'    => '200px',
                                     'caption'  => 'Area',
                                     'onClick'  => $onClick_Referencing,
                                 ],
                                 [
-                                    'name'     => 'name',
+                                    'name'     => 'ObjectName',
                                     'width'    => 'auto',
                                     'caption'  => 'Name',
                                     'onClick'  => $onClick_Referencing,
@@ -865,18 +955,80 @@ trait StubsCommonLib
                             ],
                             'add'      => false,
                             'delete'   => false,
-                            'rowCount' => count($r['Referencing']),
+                            'rowCount' => $rowCount_Referencing > 0 ? $rowCount_Referencing : 1,
                             'values'   => $r['Referencing'],
                             'caption'  => 'by instance used objects',
                         ],
                         [
                             'type'     => 'OpenObjectButton',
-                            'objectID' => isset($r['Referencing'][0]['ObjektID']) ? $r['Referencing'][0]['ObjektID'] : 0,
+                            'objectID' => $rowCount_Referencing > 0 ? $r['Referencing'][0]['ObjektID'] : 0,
+                            'visible'  => $rowCount_Referencing > 0,
                             'name'     => 'openObject_Referencing',
                             'caption'  => 'Open object',
                         ],
                     ],
                 ],
+
+                [
+                    'type'    => 'ColumnLayout',
+                    'items'   => [
+                        [
+                            'type'     => 'List',
+                            'name'     => 'ReferencedVars',
+                            'columns'  => [
+                                [
+                                    'name'     => 'VariableID',
+                                    'width'    => '100px',
+                                    'caption'  => 'Variable',
+                                    'onClick'  => $onClick_ReferencedVars,
+                                ],
+                                [
+                                    'name'     => 'VariableIdent',
+                                    'width'    => '200px',
+                                    'caption'  => 'Ident',
+                                    'onClick'  => $onClick_ReferencedVars,
+                                ],
+                                [
+                                    'name'     => 'VariableName',
+                                    'width'    => '300px',
+                                    'caption'  => 'Name',
+                                    'onClick'  => $onClick_ReferencedVars,
+                                ],
+                                [
+                                    'name'     => 'ObjektID',
+                                    'width'    => '100px',
+                                    'caption'  => 'Object',
+                                    'onClick'  => $onClick_ReferencedVars,
+                                ],
+                                [
+                                    'name'     => 'ObjectArea',
+                                    'width'    => '200px',
+                                    'caption'  => 'Area',
+                                    'onClick'  => $onClick_ReferencedVars,
+                                ],
+                                [
+                                    'name'     => 'ObjectName',
+                                    'width'    => 'auto',
+                                    'caption'  => 'Name',
+                                    'onClick'  => $onClick_ReferencedVars,
+                                ],
+                            ],
+                            'add'      => false,
+                            'delete'   => false,
+                            'rowCount' => $rowCount_ReferencedVars > 0 ? $rowCount_ReferencedVars : 1,
+                            'values'   => $r['ReferencedVars'],
+                            'caption'  => 'Referenced statusvariables',
+                        ],
+                        [
+                            'type'     => 'OpenObjectButton',
+                            'objectID' => $rowCount_ReferencedVars > 0 ? $r['ReferencedVars'][0]['ObjektID'] : 0,
+                            'visible'  => $rowCount_ReferencedVars > 0,
+                            'name'     => 'openObject_ReferencedVars',
+                            'caption'  => 'Open object',
+                        ],
+                    ],
+                ],
+
             ],
         ];
         return $form;
