@@ -663,7 +663,7 @@ trait StubsCommonLib
                         'ObjectType' => $objectType,
                         'EventType'  => $eventType,
                         'ObjectArea' => $this->EventType2Name($eventType),
-                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectName' => IPS_GetName($objID),
                     ];
                     break;
                 case OBJECTTYPE_MEDIA:
@@ -722,7 +722,7 @@ trait StubsCommonLib
                     ];
                     break;
                 default:
-                    $this->SendDebug(__FUNCTION__, 'un┬andled object=' . print_r($obj, true), 0);
+                    $this->SendDebug(__FUNCTION__, 'unhandled object=' . print_r($obj, true), 0);
                     break;
             }
         }
@@ -822,7 +822,7 @@ trait StubsCommonLib
                             'ObjectType'    => $objectType,
                             'EventType'     => $eventType,
                             'ObjectArea'    => $this->EventType2Name($eventType),
-                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                            'ObjectName'    => IPS_GetName($chldID),
                         ];
                         break;
                     default:
@@ -1032,5 +1032,101 @@ trait StubsCommonLib
             ],
         ];
         return $form;
+    }
+
+    private function PushCallChain(string $func)
+    {
+        if (isset($_IPS['thread']) == false) {
+            foreach (IPS_GetScriptThreadList() as $t => $i) {
+                $thread = IPS_GetScriptThread($i);
+                if ($thread['ThreadID'] == $_IPS['THREAD']) {
+                    $_IPS['thread'] = $thread;
+                    break;
+                }
+            }
+        }
+
+        $stack = isset($_IPS['stack']) ? $_IPS['stack'] : [];
+        $c = count($stack);
+        if ($c == 0 || ($stack[$c - 1]['class'] != __CLASS__ || $stack[$c - 1]['func'] != $func)) {
+            $stack[] = [
+                'class'      => __CLASS__,
+                'func'       => $func,
+                'InstanceID' => $this->InstanceID,
+            ];
+        }
+        $_IPS['stack'] = $stack;
+
+        $chain = isset($_IPS['chain']) ? $_IPS['chain'] : [];
+        if ($chain == []) {
+            if (isset($_IPS['VARIABLE'])) {
+                array_push($chain, $_IPS['VARIABLE']);
+            }
+            if (isset($_IPS['EVENT'])) {
+                array_push($chain, $_IPS['EVENT']);
+            }
+            if (isset($_IPS['thread']['ScriptID']) && $_IPS['thread']['ScriptID'] > 0) {
+                array_push($chain, $_IPS['thread']['ScriptID']);
+            }
+        }
+        if ($chain == [] || end($chain) != $this->InstanceID) {
+            array_push($chain, $this->InstanceID);
+        }
+        $_IPS['chain'] = $chain;
+        // $this->SendDebug(__FUNCTION__, 'func=' . $func . ', environment=' . print_r($_IPS, true), 0);
+    }
+
+    private function PopCallChain(string $func)
+    {
+        $stack = isset($_IPS['stack']) ? $_IPS['stack'] : [];
+        $c = count($stack);
+        if ($c > 0 && $stack[$c - 1]['class'] == __CLASS__ && $stack[$c - 1]['func'] == $func) {
+            array_pop($stack);
+        }
+        $_IPS['stack'] = $stack;
+
+        $chain = isset($_IPS['chain']) ? $_IPS['chain'] : [];
+        if (end($chain) == $this->InstanceID) {
+            array_pop($chain);
+        }
+        $_IPS['chain'] = $chain;
+        // $this->SendDebug(__FUNCTION__, 'func=' . $func . ', environment=' . print_r($_IPS, true), 0);
+    }
+
+    private function PrintCallChain(bool $complete)
+    {
+        $cause = isset($_IPS['ENVIRONMENT']) ? $_IPS['ENVIRONMENT'] : $_IPS['SENDER'];
+        $chain = isset($_IPS['chain']) ? $_IPS['chain'] : [];
+        if ($complete == false && end($chain) == $this->InstanceID) {
+            array_pop($chain);
+        }
+
+        $chainS = [];
+        foreach ($chain as $objID) {
+            $obj = IPS_GetObject($objID);
+            $objectType = $obj['ObjectType'];
+            switch ($objectType) {
+                case OBJECTTYPE_CATEGORY:
+                case OBJECTTYPE_INSTANCE:
+                case OBJECTTYPE_VARIABLE:
+                case OBJECTTYPE_SCRIPT:
+                case OBJECTTYPE_MEDIA:
+                    $chainS[] = $this->ObjectType2Name($objectType) . ' #' . $objID . ' ' . IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')';
+                    break;
+                case OBJECTTYPE_EVENT:
+                case OBJECTTYPE_LINK:
+                    $chainS[] = $this->ObjectType2Name($objectType) . ' #' . $objID . ' ' . IPS_GetName($objID);
+                    break;
+                default:
+                    break;
+            }
+        }
+        $this->SendDebug(__FUNCTION__, 'cause=' . $cause . ', chain=' . print_r($chainS, true), 0);
+
+        $s = $cause;
+        if ($chain != []) {
+            $s .= '[' . implode(',', $chain) . ']';
+        }
+        return $s;
     }
 }

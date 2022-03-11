@@ -90,3 +90,7 @@ Ergänzung der *locale.json*
 "Name": "Bezeichnung",
 "Open object": "Objekt öffnen",
 ```
+
+- void PushCallChain(string $func)<br>
+- void PopCallChain(string $func)<br>
+- string PrintCallChain(bool $complete)<br>
