@@ -718,7 +718,7 @@ trait StubsCommonLib
                         'ObjectType' => $objectType,
                         'ScriptType' => $scriptType,
                         'ObjectArea' => $this->ScriptType2Name($scriptType),
-                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
+                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . '), Zeile ' . $ref['LineNumber'],
                     ];
                     break;
                 default:
@@ -808,7 +808,7 @@ trait StubsCommonLib
                             'ObjectType'    => $objectType,
                             'ScriptType'    => $scriptType,
                             'ObjectArea'    => $this->ScriptType2Name($scriptType),
-                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                            'ObjectName'    => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . '), Zeile ' . $ref['LineNumber'],
                         ];
                         break;
                     case OBJECTTYPE_EVENT:
