@@ -857,7 +857,6 @@ trait StubsCommonLib
                 }
                 break;
             default:
-                $this->SendDebug(__FUNCTION__, 'unknown ident ' . $ident, 0);
                 break;
         }
         return $r;
