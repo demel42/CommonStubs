@@ -843,11 +843,10 @@ trait StubsCommonLib
 
     private function CommonRequestAction(string $ident, $params)
     {
-        $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
-
         $r = false;
         switch ($ident) {
             case 'UpdateFormField':
+                $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
                 $jparams = json_decode($params, true);
                 if (isset($jparams['field']) && isset($jparams['param']) && isset($jparams['value'])) {
                     $this->UpdateFormField($jparams['field'], $jparams['param'], $jparams['value']);
