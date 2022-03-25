@@ -164,11 +164,10 @@ trait StubsCommonLib
 
     private function HookIsUsed(string $ident)
     {
-        $this->SendDebug(__FUNCTION__, 'newHook=' . $ident, 0);
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
         $used = false;
         $instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
         $hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
-        $this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
         foreach ($hooks as $hook) {
             if ($hook['Hook'] == $ident) {
                 if ($hook['TargetID'] != $this->InstanceID) {
@@ -183,11 +182,10 @@ trait StubsCommonLib
 
     private function RegisterHook(string $ident)
     {
-        $this->SendDebug(__FUNCTION__, 'WebHook=' . $ident, 0);
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
         $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
-            $this->SendDebug(__FUNCTION__, 'Hooks=' . print_r($hooks, true), 0);
             $found = false;
             foreach ($hooks as $index => $hook) {
                 if ($hook['Hook'] == $ident) {
@@ -225,6 +223,52 @@ trait StubsCommonLib
             }
         }
         return 'text/plain';
+    }
+
+    private function OAuthIsUsed(string $ident)
+    {
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
+        $used = false;
+        $instID = IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}')[0];
+        $clientID = json_decode(IPS_GetProperty($instID, 'ClientIDs'), true);
+        foreach ($clientID as $clientID) {
+            if ($clientID['ClientID'] == $ident) {
+                if ($clientID['TargetID'] != $this->InstanceID) {
+                    $used = true;
+                }
+                break;
+            }
+        }
+        $this->SendDebug(__FUNCTION__, 'used=' . $this->bool2str($used), 0);
+        return $used;
+    }
+
+    private function RegisterOAuth(string $ident)
+    {
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
+        $ids = IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}');
+        if (count($ids) > 0) {
+            $clientIDs = json_decode(IPS_GetProperty($ids[0], 'ClientIDs'), true);
+            $found = false;
+            foreach ($clientIDs as $index => $clientID) {
+                if ($clientID['ClientID'] == $ident) {
+                    if ($clientID['TargetID'] == $this->InstanceID) {
+                        $this->SendDebug(__FUNCTION__, 'already exists with foreign TargetID ' . $clientID['TargetID'] . ', overwrite with ' . $this->InstanceID, 0);
+                        $clientID['TargetID'] = $this->InstanceID;
+                    } else {
+                        $this->SendDebug(__FUNCTION__, 'already exists with correct TargetID ' . $this->InstanceID, 0);
+                    }
+                    $clientIDs[$index]['TargetID'] = $this->InstanceID;
+                    $found = true;
+                }
+            }
+            if (!$found) {
+                $clientIDs[] = ['ClientID' => $ident, 'TargetID' => $this->InstanceID];
+                $this->SendDebug(__FUNCTION__, 'not found, create with TargetID ' . $this->InstanceID, 0);
+            }
+            IPS_SetProperty($ids[0], 'ClientIDs', json_encode($clientIDs));
+            IPS_ApplyChanges($ids[0]);
+        }
     }
 
     private function AdjustAction(string $ident, bool $mode)
@@ -389,6 +433,13 @@ trait StubsCommonLib
             $this->SendDebug(__FUNCTION__, '=> formStatus=' . print_r($formStatus, true), 0);
         }
         return $form;
+    }
+
+    private function GetConnectUrl()
+    {
+        $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+        $url = CC_GetConnectURL($instID);
+        return $url;
     }
 
     private function GetConnectionID()

@@ -23,9 +23,13 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 - void SetMediaData(string $Name, string $data, int $Mediatyp, string $Extension, bool $Cached)<br>
 <br>
 
-- void HookIsUsed(string $WebHook)<br>
-- void RegisterHook(string $WebHook)<br>
+- bool HookIsUsed(string $ident)<br>
+- void RegisterHook(string $ident)<br>
 - string GetMimeType(string $extension)<br>
+<br>
+
+- bool OAuthIsUsed(string $ident)<br>
+- void RegisterOAuth(string $ident)<br>
 <br>
 
 - mixed GetArrayElem(array $data, string $var, mixed $dflt)<br>
@@ -42,6 +46,9 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 <br>
 
 - bool AdjustAction(string $Ident, bool $Mode)<br>
+<br>
+
+- string GetConnectUrl()<br>
 <br>
 
 - int GetConnectionID()<br>
