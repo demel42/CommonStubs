@@ -2,12 +2,13 @@
 
 ## trait StubsCommonLib
 
-- bool SetValue(string $Ident, mixed $Value)<br>
-- bool SaveValue(string $Ident, mixed $Value, bool &$IsChanged)<br>
-- mixed GetValue(string $Ident)<br>
+- bool SetValue(string $ident, mixed $value)<br>
+- bool SaveValue(string $ident, mixed $value, bool &$isChanged)<br>
+- mixed GetValue(string $ident)<br>
 <br>
 
-- void CreateVarProfile(string $Name, int $ProfileType, string $Suffix, float $MinValue, float $MaxValue, int $StepSize, int $Digits, string $Icon, array $Associations, bool $doReinstall)<br>
+- void CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)<br>
+- string CheckVarProfile4Value(string $ident, mixed $value)<br>
 <br>
 
 inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23a0de51bb3fbc114cefc3acf23c27a14/libs/SqueezeBoxTraits.php)<br>
@@ -35,6 +36,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 - mixed GetArrayElem(array $data, string $var, mixed $dflt)<br>
 - string LimitOutput(string $str, int $maxLength = null)<br>
 - string bool2str(bool $bval)<br>
+- string format_float(float $number, int $dec_points)<br>
 - string HttpCode2Text(int $code)<br>
 <br>
 

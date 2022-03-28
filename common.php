@@ -74,6 +74,22 @@ trait StubsCommonLib
         }
     }
 
+    private function CheckVarProfile4Value(string $ident, $value)
+    {
+        $name = false;
+        if (IPS_VariableProfileExists($ident)) {
+            $VarProfil = IPS_GetVariableProfile($ident);
+            $Associations = $VarProfil['Associations'];
+            foreach ($Associations as $Association) {
+                if ($value == $Association['Value']) {
+                    $name = $Association['Name'];
+                    break;
+                }
+            }
+        }
+        return $name;
+    }
+
     // inspired by Nall-chan
     //   https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23a0de51bb3fbc114cefc3acf23c27a14/libs/SqueezeBoxTraits.php
     public function __get(string $ident)
@@ -308,6 +324,22 @@ trait StubsCommonLib
             return $bval ? 'true' : 'false';
         }
         return $bval;
+    }
+
+    private function format_float(float $number, int $dec_points = -1)
+    {
+        if (is_numeric((float) $number)) {
+            $nk = abs($number - floor($number));
+            $n = strlen((string) floatval($nk));
+            $d = ($n > 1) ? $n - 2 : 0;
+            if ($dec_points == -1 || $dec_points > $d) {
+                $dec_points = $d;
+            }
+            $result = number_format($number, $dec_points, '.', '');
+        } else {
+            $result = false;
+        }
+        return $result;
     }
 
     private function LimitOutput($str, int $maxLength = null)
