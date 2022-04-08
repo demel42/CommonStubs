@@ -33,7 +33,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 - void RegisterOAuth(string $ident)<br>
 <br>
 
-- mixed GetArrayElem(array $data, string $var, mixed $dflt)<br>
+- mixed GetArrayElem(array $data, string $var, mixed $dflt, bool &$fnd = null)<br>
 - string LimitOutput(string $str, int $maxLength = null)<br>
 - string bool2str(bool $bval)<br>
 - string format_float(float $number, int $dec_points)<br>

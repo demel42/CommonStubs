@@ -304,16 +304,25 @@ trait StubsCommonLib
         return $oldmode != $mode;
     }
 
-    private function GetArrayElem(array $data, string $var, $dflt)
+    private function GetArrayElem($data, string $var, $dflt, bool &$fnd = null)
     {
         $ret = $data;
-        $vs = explode('.', $var);
-        foreach ($vs as $v) {
-            if (!isset($ret[$v])) {
-                $ret = $dflt;
-                break;
+        if (is_array($data)) {
+            $b = true;
+            $vs = explode('.', $var);
+            foreach ($vs as $v) {
+                if (!isset($ret[$v])) {
+                    $ret = $dflt;
+                    $b = false;
+                    break;
+                }
+                $ret = $ret[$v];
             }
-            $ret = $ret[$v];
+        } else {
+            $b = false;
+        }
+        if (is_null($fnd) == false) {
+            $fnd = $b;
         }
         return $ret;
     }
