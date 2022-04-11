@@ -699,6 +699,17 @@ trait StubsCommonLib
         return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
     }
 
+    private function cmp_timer($a, $b)
+    {
+        if (isset($a['Name']) && isset($b['Name'])) {
+            if ($a['Name'] != $b['Name']) {
+                return (strcmp($a['Name'], $b['Name']) < 0) ? -1 : 1;
+            }
+        }
+
+        return ($a['TimerID'] < $b['TimerID']) ? -1 : 1;
+    }
+
     private function ExplodeReferences($instID)
     {
         $inst = IPS_GetInstance($instID);
@@ -943,10 +954,38 @@ trait StubsCommonLib
         }
         usort($rferencedVars, [__CLASS__, 'cmp_refs']);
 
+        // Timer der Instanz
+        $rferencedTimer = [];
+        $timerList = IPS_GetTimerList();
+        foreach ($timerList as $t) {
+            $timer = IPS_GetTimer($t);
+            if ($timer['InstanceID'] != $this->InstanceID) {
+                continue;
+            }
+
+            $duration = $this->seconds2duration($timer['Interval'] / 1000);
+            if ($duration == '') {
+                $duration = '-';
+            }
+            $ts = $timer['NextRun'];
+            $nextRun = $ts > 0 ? date('d.m.Y H:i:s', $ts) : '-';
+            $ts = $timer['LastRun'];
+            $lastRun = $ts > 0 ? date('d.m.Y H:i:s', $ts) : '-';
+            $rferencedTimer[] = [
+                'TimerID'  => $timer['TimerID'],
+                'Name'     => $timer['Name'],
+                'interval' => $duration,
+                'nextRun'  => $nextRun,
+                'lastRun'  => $lastRun,
+            ];
+        }
+        usort($rferencedTimer, [__CLASS__, 'cmp_Timer']);
+
         $r = [
-            'Referencing'    => $referencing,
-            'ReferencedBy'   => $rferencedBy,
-            'ReferencedVars' => $rferencedVars,
+            'Referencing'     => $referencing,
+            'ReferencedBy'    => $rferencedBy,
+            'ReferencedVars'  => $rferencedVars,
+            'ReferencedTimer' => $rferencedTimer,
         ];
 
         return $r;
@@ -990,6 +1029,7 @@ trait StubsCommonLib
         $rowCount_ReferencedBy = count($r['ReferencedBy']);
         $rowCount_Referencing = count($r['Referencing']);
         $rowCount_ReferencedVars = count($r['ReferencedVars']);
+        $rowCount_ReferencedTimer = count($r['ReferencedTimer']);
 
         $form = [
             'type'    => 'ExpansionPanel',
@@ -1138,6 +1178,47 @@ trait StubsCommonLib
                     ],
                 ],
 
+                [
+                    'type'    => 'ColumnLayout',
+                    'items'   => [
+                        [
+                            'type'     => 'List',
+                            'name'     => 'ReferencedTimer',
+                            'columns'  => [
+                                [
+                                    'name'     => 'TimerID',
+                                    'width'    => '100px',
+                                    'caption'  => 'Timer',
+                                ],
+                                [
+                                    'name'     => 'Name',
+                                    'width'    => '300px',
+                                    'caption'  => 'Ident',
+                                ],
+                                [
+                                    'name'     => 'interval',
+                                    'width'    => '100px',
+                                    'caption'  => 'Interval',
+                                ],
+                                [
+                                    'name'     => 'nextRun',
+                                    'width'    => '200px',
+                                    'caption'  => 'Next run',
+                                ],
+                                [
+                                    'name'     => 'lastRun',
+                                    'width'    => '200px',
+                                    'caption'  => 'Last run',
+                                ],
+                            ],
+                            'add'      => false,
+                            'delete'   => false,
+                            'rowCount' => $rowCount_ReferencedTimer > 0 ? $rowCount_ReferencedTimer : 1,
+                            'values'   => $r['ReferencedTimer'],
+                            'caption'  => 'Timer information',
+                        ],
+                    ],
+                ],
             ],
         ];
         return $form;
