@@ -103,6 +103,11 @@ Ergänzung der *locale.json*
 "Area": "Bereich",
 "Name": "Bezeichnung",
 "Open object": "Objekt öffnen",
+"Timer": "Timer",
+"Interval": "Intervall",
+"Next run": "nächste Ausführung",
+"Last run": "letzte Ausführung",
+"Timer information": "Timer-Information",
 ```
 
 `void PushCallChain(string $func)`<br>
