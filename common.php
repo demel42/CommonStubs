@@ -335,6 +335,25 @@ trait StubsCommonLib
         return $bval;
     }
 
+    private function seconds2duration(int $sec)
+    {
+        $duration = '';
+        if ($sec > 3600) {
+            $duration .= sprintf('%dh', floor($sec / 3600));
+            $sec = $sec % 3600;
+        }
+        if ($sec > 60) {
+            $duration .= sprintf('%dm', floor($sec / 60));
+            $sec = $sec % 60;
+        }
+        if ($sec > 0) {
+            $duration .= sprintf('%ds', $sec);
+            $sec = floor($sec);
+        }
+
+        return $duration;
+    }
+
     private function format_float(float $number, int $dec_points = -1)
     {
         if (is_numeric((float) $number)) {
@@ -1218,5 +1237,39 @@ trait StubsCommonLib
             $s .= '[' . implode(',', $chain) . ']';
         }
         return $s;
+    }
+
+    private function PrintTimer(string $name)
+    {
+        $timerList = IPS_GetTimerList();
+        foreach ($timerList as $t) {
+            $timer = IPS_GetTimer($t);
+            if ($timer['InstanceID'] != $this->InstanceID) {
+                continue;
+            }
+            if ($timer['Name'] != $name) {
+                continue;
+            }
+
+            $s = 'timer=' . $timer['Name'] . '(' . $timer['TimerID'] . ')';
+
+            $duration = $this->seconds2duration($timer['Interval'] / 1000);
+            if ($duration == '') {
+                $duration = '-';
+            }
+            $s .= ', interval=' . $duration;
+
+            if ($timer['NextRun']) {
+                $s .= ', next=' . date('H:i:s', $timer['NextRun']);
+            }
+            return $s;
+        }
+        return false;
+    }
+
+    private function MaintainTimer(string $name, int $msec)
+    {
+        $this->SetTimerInterval($name, $msec);
+        $this->SendDebug(__FUNCTION__, $this->PrintTimer($name), 0);
     }
 }

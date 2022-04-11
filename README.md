@@ -2,78 +2,83 @@
 
 ## trait StubsCommonLib
 
-- bool SetValue(string $ident, mixed $value)<br>
-- bool SaveValue(string $ident, mixed $value, bool &$isChanged)<br>
-- mixed GetValue(string $ident)<br>
+- `bool SetValue(string $ident, mixed $value)`<br>
+- `bool SaveValue(string $ident, mixed $value, bool &$isChanged)`<br>
+- `mixed GetValue(string $ident)`<br>
 <br>
 
-- void CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)<br>
-- string CheckVarProfile4Value(string $ident, mixed $value)<br>
+- `void CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)`<br>
+- `string CheckVarProfile4Value(string $ident, mixed $value)`<br>
 <br>
 
-inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23a0de51bb3fbc114cefc3acf23c27a14/libs/SqueezeBoxTraits.php)<br>
-- string __get(string $name)<br>
-- void __set(string $name, string $value)<br>
+inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23a0de51bb3fbc114cefc3acf23c27a14/libs/SqueezeBoxTraits.php)`<br>
+- `string __get(string $name)`<br>
+- `void __set(string $name, string $value)`<br>
 <br>
 
-- void SetMultiBuffer(string $name, string $value)<br>
-- string GetMultiBuffer(string $name)<br>
+- `void SetMultiBuffer(string $name, string $value)`<br>
+- `string GetMultiBuffer(string $name)`<br>
 <br>
 
-- string GetMediaData(string $Name)<br>
-- void SetMediaData(string $Name, string $data, int $Mediatyp, string $Extension, bool $Cached)<br>
+- `string GetMediaData(string $Name)`<br>
+- `void SetMediaData(string $Name, string $data, int $Mediatyp, string $Extension, bool $Cached)`<br>
 <br>
 
-- bool HookIsUsed(string $ident)<br>
-- void RegisterHook(string $ident)<br>
-- string GetMimeType(string $extension)<br>
+- `bool HookIsUsed(string $ident)`<br>
+- `void RegisterHook(string $ident)`<br>
+- `string GetMimeType(string $extension)`<br>
 <br>
 
-- bool OAuthIsUsed(string $ident)<br>
-- void RegisterOAuth(string $ident)<br>
+- `bool OAuthIsUsed(string $ident)`<br>
+- `void RegisterOAuth(string $ident)`<br>
 <br>
 
-- mixed GetArrayElem(array $data, string $var, mixed $dflt, bool &$fnd = null)<br>
-- string LimitOutput(string $str, int $maxLength = null)<br>
-- string bool2str(bool $bval)<br>
-- string format_float(float $number, int $dec_points)<br>
-- string HttpCode2Text(int $code)<br>
+- `mixed GetArrayElem(array $data, string $var, mixed $dflt, bool &$fnd = null)`<br>
+- `string LimitOutput(string $str, int $maxLength = null)`<br>
+- `string bool2str(bool $bval)`<br>
+- `string format_float(float $number, int $dec_points)`<br>
+- `string seconds2duration(int $sec)`<br>
+- `string HttpCode2Text(int $code)`<br>
 <br>
 
-- string GetConfigurationForm()<br>
-- string GetStatusText()<br>
+- `string GetConfigurationForm()`<br>
+- `string GetStatusText()`<br>
 <br>
 
-- string TranslateFormat(string $str, array $vars = null)<br>
+- `string TranslateFormat(string $str, array $vars = null)`<br>
 <br>
 
-- bool AdjustAction(string $Ident, bool $Mode)<br>
+- `string PrintTimer(string $name)`<br>
+- `string MaintainTimer(string $name, int $msec)`<br>
 <br>
 
-- string GetConnectUrl()<br>
+- `bool AdjustAction(string $Ident, bool $Mode)`<br>
 <br>
 
-- int GetConnectionID()<br>
+- `string GetConnectUrl()`<br>
 <br>
 
-- string InstanceInfo(int $instID)<br>
-- array GetInformationForm()<br>
+- `int GetConnectionID()`<br>
+<br>
+
+- `string InstanceInfo(int $instID)`<br>
+- `array GetInformationForm()`<br>
 
 Ergänzung der *locale.json*
 ```
 "Information": "Information",
 ```
 
-- string ScriptType2Name(int $scriptType)<br>
-- string EventType2Name(int $eventType)<br>
-- string ObjectType2Name(int $objectType)<br>
+- `string ScriptType2Name(int $scriptType)`<br>
+- `string EventType2Name(int $eventType)`<br>
+- `string ObjectType2Name(int $objectType)`<br>
 
-- bool CommonRequestAction(string $ident, variant $params)<br>
+- `bool CommonRequestAction(string $ident, variant $params)`<br>
 
-- string GetModulePrefix()<br>
+- `string GetModulePrefix()`<br>
 
-- array ExplodeReferences(int $instID)<br>
-- array GetReferencesForm()<br>
+- `array ExplodeReferences(int $instID)`<br>
+- `array GetReferencesForm()`<br>
 
 Ergänzung der *locale.json*
 ```
@@ -100,6 +105,6 @@ Ergänzung der *locale.json*
 "Open object": "Objekt öffnen",
 ```
 
-- void PushCallChain(string $func)<br>
-- void PopCallChain(string $func)<br>
-- string PrintCallChain(bool $complete)<br>
+- `void PushCallChain(string $func)`<br>
+- `void PopCallChain(string $func)`<br>
+- `string PrintCallChain(bool $complete)`<br>
