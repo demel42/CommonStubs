@@ -1005,6 +1005,14 @@ trait StubsCommonLib
                     $this->SendDebug(__FUNCTION__, 'params must include field, param, value', 0);
                 }
                 break;
+            case 'UpdateFormData':
+                $v = $this->ExplodeReferences($this->InstanceID);
+                foreach (['ReferencedBy', 'Referencing', 'ReferencedVars', 'ReferencedTimer'] as $ident) {
+                    $this->UpdateFormField($ident, 'values', json_encode($v[$ident]));
+                    $this->UpdateFormField($ident, 'rowCount', count($v[$ident]));
+                }
+                $r = true;
+                break;
             default:
                 break;
         }
@@ -1020,16 +1028,16 @@ trait StubsCommonLib
 
     private function GetReferencesForm()
     {
-        $r = $this->ExplodeReferences($this->InstanceID);
-        $this->SendDebug(__FUNCTION__, print_r($r, true), 0);
+        $v = $this->ExplodeReferences($this->InstanceID);
+        $this->SendDebug(__FUNCTION__, print_r($v, true), 0);
 
         $onClick_ReferencedBy = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_ReferencedBy", "param" => "objectID", "value" => $ReferencedBy["ObjektID"]]));';
         $onClick_Referencing = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_Referencing", "param" => "objectID", "value" => $Referencing["ObjektID"]]));';
         $onClick_ReferencedVars = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_ReferencedVars", "param" => "objectID", "value" => $ReferencedVars["ObjektID"]]));';
-        $rowCount_ReferencedBy = count($r['ReferencedBy']);
-        $rowCount_Referencing = count($r['Referencing']);
-        $rowCount_ReferencedVars = count($r['ReferencedVars']);
-        $rowCount_ReferencedTimer = count($r['ReferencedTimer']);
+        $rowCount_ReferencedBy = count($v['ReferencedBy']);
+        $rowCount_Referencing = count($v['Referencing']);
+        $rowCount_ReferencedVars = count($v['ReferencedVars']);
+        $rowCount_ReferencedTimer = count($v['ReferencedTimer']);
 
         $form = [
             'type'    => 'ExpansionPanel',
@@ -1064,12 +1072,12 @@ trait StubsCommonLib
                             'add'      => false,
                             'delete'   => false,
                             'rowCount' => $rowCount_ReferencedBy > 0 ? $rowCount_ReferencedBy : 1,
-                            'values'   => $r['ReferencedBy'],
+                            'values'   => $v['ReferencedBy'],
                             'caption'  => 'Objects using the instance',
                         ],
                         [
                             'type'     => 'OpenObjectButton',
-                            'objectID' => $rowCount_ReferencedBy > 0 ? $r['ReferencedBy'][0]['ObjektID'] : 0,
+                            'objectID' => $rowCount_ReferencedBy > 0 ? $v['ReferencedBy'][0]['ObjektID'] : 0,
                             'visible'  => $rowCount_ReferencedBy > 0,
                             'name'     => 'openObject_ReferencedBy',
                             'caption'  => 'Open object',
@@ -1105,12 +1113,12 @@ trait StubsCommonLib
                             'add'      => false,
                             'delete'   => false,
                             'rowCount' => $rowCount_Referencing > 0 ? $rowCount_Referencing : 1,
-                            'values'   => $r['Referencing'],
+                            'values'   => $v['Referencing'],
                             'caption'  => 'by instance used objects',
                         ],
                         [
                             'type'     => 'OpenObjectButton',
-                            'objectID' => $rowCount_Referencing > 0 ? $r['Referencing'][0]['ObjektID'] : 0,
+                            'objectID' => $rowCount_Referencing > 0 ? $v['Referencing'][0]['ObjektID'] : 0,
                             'visible'  => $rowCount_Referencing > 0,
                             'name'     => 'openObject_Referencing',
                             'caption'  => 'Open object',
@@ -1165,12 +1173,12 @@ trait StubsCommonLib
                             'add'      => false,
                             'delete'   => false,
                             'rowCount' => $rowCount_ReferencedVars > 0 ? $rowCount_ReferencedVars : 1,
-                            'values'   => $r['ReferencedVars'],
+                            'values'   => $v['ReferencedVars'],
                             'caption'  => 'Referenced statusvariables',
                         ],
                         [
                             'type'     => 'OpenObjectButton',
-                            'objectID' => $rowCount_ReferencedVars > 0 ? $r['ReferencedVars'][0]['ObjektID'] : 0,
+                            'objectID' => $rowCount_ReferencedVars > 0 ? $v['ReferencedVars'][0]['ObjektID'] : 0,
                             'visible'  => $rowCount_ReferencedVars > 0,
                             'name'     => 'openObject_ReferencedVars',
                             'caption'  => 'Open object',
@@ -1214,12 +1222,13 @@ trait StubsCommonLib
                             'add'      => false,
                             'delete'   => false,
                             'rowCount' => $rowCount_ReferencedTimer > 0 ? $rowCount_ReferencedTimer : 1,
-                            'values'   => $r['ReferencedTimer'],
+                            'values'   => $v['ReferencedTimer'],
                             'caption'  => 'Timer information',
                         ],
                     ],
                 ],
             ],
+            'onClick' => 'IPS_RequestAction($id, "UpdateFormData", "");',
         ];
         return $form;
     }
