@@ -930,7 +930,7 @@ trait StubsCommonLib
                             'ObjectType'    => $objectType,
                             'ScriptType'    => $scriptType,
                             'ObjectArea'    => $this->ScriptType2Name($scriptType),
-                            'ObjectName'    => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . '), Zeile ' . $ref['LineNumber'],
+                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . '), Zeile ' . $ref['LineNumber'],
                         ];
                         break;
                     case OBJECTTYPE_EVENT:
