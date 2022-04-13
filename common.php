@@ -843,6 +843,9 @@ trait StubsCommonLib
                         'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . '), Zeile ' . $ref['LineNumber'],
                     ];
                     break;
+                case OBJECTTYPE_LINK:
+                    // skip
+                    break;
                 default:
                     $this->SendDebug(__FUNCTION__, 'unhandled object=' . print_r($obj, true), 0);
                     break;
