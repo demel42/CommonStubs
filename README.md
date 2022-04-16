@@ -56,6 +56,8 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 <br>
 
 `string GetConnectUrl()`<br>
+`int GetConnectStatus()`<br>
+`string GetConnectStatusText()`<br>
 <br>
 
 `int GetConnectionID()`<br>

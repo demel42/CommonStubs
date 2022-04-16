@@ -502,6 +502,22 @@ trait StubsCommonLib
         return $url;
     }
 
+    private function GetConnectStatus()
+    {
+        $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+        return IPS_GetInstance($instID)['InstanceStatus'];
+    }
+
+    private function GetConnectStatusText()
+    {
+        if ($this->GetConnectStatus() != IS_ACTIVE) {
+            $s = 'Error: Symcon Connect is not active!';
+        } else {
+            $s = 'Status: Symcon Connect is OK!';
+        }
+        return $s;
+    }
+
     private function GetConnectionID()
     {
         $inst = IPS_GetInstance($this->InstanceID);
