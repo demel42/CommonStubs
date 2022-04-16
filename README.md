@@ -58,7 +58,12 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string GetConnectUrl()`<br>
 `int GetConnectStatus()`<br>
 `string GetConnectStatusText()`<br>
-<br>
+
+Ergänzung der *locale.json*
+```
+"Status: Symcon Connect is OK!": "Status: Symcon Connect ist OK!",
+"Error: Symcon Connect is not active!": "Fehler: Symcon Connect ist nicht aktiv!",
+```
 
 `int GetConnectionID()`<br>
 <br>
