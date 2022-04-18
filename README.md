@@ -94,7 +94,6 @@ dazu bei Bedarf in module.php: `string CheckModuleUpdate(array $oldInfo, array $
 `bool CompleteUpdate()`<br>
 dazu bei Bedarf in module.php: `bool CompletekModuleUpdate(array $oldInfo, array $newInfo)`<br>
 `array GetCompleteUpdateFormAction()`<br>
-`array GetCheckUpdateFormElement()`<br>
 
 
 Ergänzung der *locale.json*
