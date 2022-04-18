@@ -95,6 +95,13 @@ dazu bei Bedarf in module.php: `string CheckModuleUpdate(array $oldInfo, array $
 dazu bei Bedarf in module.php: `bool CompletekModuleUpdate(array $oldInfo, array $newInfo)`<br>
 `array GetCompleteUpdateFormAction()`<br>
 
+Definierte Konstanten
+```
+IS_INVALIDPREREQUISITES
+IS_UPDATEUNCOMPLETED
+IS_INVALIDCONFIG
+IS_DEACTIVATED
+```
 
 Ergänzung der *locale.json*
 ```
