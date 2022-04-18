@@ -1512,16 +1512,16 @@ trait StubsCommonLib
         if ($eq == true) {
             $this->SendDebug(__FUNCTION__, 'equal version, nothing todo (' . $m . ')', 0);
         } else {
-        if (method_exists($this, 'CompleteModuleUpdate')) {
-            if ($this->CompleteModuleUpdate($oldInfo, $newInfo) == false) {
-                $this->SendDebug(__FUNCTION__, 'unable to perform update (' . $m . ')', 0);
-                return false;
+            if (method_exists($this, 'CompleteModuleUpdate')) {
+                if ($this->CompleteModuleUpdate($oldInfo, $newInfo) == false) {
+                    $this->SendDebug(__FUNCTION__, 'unable to perform update (' . $m . ')', 0);
+                    return false;
+                }
+                $this->SendDebug(__FUNCTION__, 'update completed (' . $m . ')', 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, 'different version but nothing done (' . $m . ')', 0);
             }
-            $this->SendDebug(__FUNCTION__, 'update completed (' . $m . ')', 0);
-        } else {
-            $this->SendDebug(__FUNCTION__, 'different version but nothing done (' . $m . ')', 0);
         }
-		}
 
         $newInfo['tstamp'] = time();
         $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
@@ -1585,12 +1585,12 @@ trait StubsCommonLib
             'caption' => $title,
         ];
 
-		if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
+        if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
             $formElements[] = [
                 'type'    => 'Label',
                 'caption' => $this->CheckUpdate(),
             ];
-			return $formElements;
+            return $formElements;
         }
 
         $inst = IPS_GetInstance($this->InstanceID);
