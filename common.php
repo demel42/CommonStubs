@@ -1057,7 +1057,7 @@ trait StubsCommonLib
     private function GetReferencesFormAction()
     {
         $v = $this->ExplodeReferences($this->InstanceID);
-        $this->SendDebug(__FUNCTION__, print_r($v, true), 0);
+        // $this->SendDebug(__FUNCTION__, print_r($v, true), 0);
 
         $onClick_ReferencedBy = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_ReferencedBy", "param" => "objectID", "value" => $ReferencedBy["ObjektID"]]));';
         $onClick_Referencing = 'IPS_RequestAction($id, "UpdateFormField", json_encode(["field" => "openObject_Referencing", "param" => "objectID", "value" => $Referencing["ObjektID"]]));';
@@ -1443,19 +1443,19 @@ trait StubsCommonLib
         ];
         $newVersion = $this->version2str($newInfo);
 
-        $this->SendDebug(__FUNCTION__, 'old=' . $oldVersion . ', new=' . $newVersion, 0);
+        $m = 'old=' . $oldVersion . ', new=' . $newVersion;
 
         $eq = $oldVersion == $newVersion;
 
         if ($eq == true) {
-            $this->SendDebug(__FUNCTION__, 'equal version', 0);
+            $this->SendDebug(__FUNCTION__, 'equal version (' . $m . ')', 0);
             return false;
         }
 
         if (method_exists($this, 'CheckModuleUpdate')) {
             $r = $this->CheckModuleUpdate($oldInfo, $newInfo);
             if ($r != []) {
-                $this->SendDebug(__FUNCTION__, 'different version, something todo', 0);
+                $this->SendDebug(__FUNCTION__, 'different version, something todo (' . $m . ')', 0);
                 $s = $this->Translate('Still something to do to complete the update') . PHP_EOL;
                 foreach ($r as $p) {
                     $s .= '- ' . $p . PHP_EOL;
@@ -1475,7 +1475,7 @@ trait StubsCommonLib
             }
         }
 
-        $this->SendDebug(__FUNCTION__, 'different version, nothing todo', 0);
+        $this->SendDebug(__FUNCTION__, 'different version, nothing todo (' . $m . ')', 0);
 
         $newInfo['tstamp'] = time();
         $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
@@ -1503,23 +1503,23 @@ trait StubsCommonLib
         ];
         $newVersion = $this->version2str($newInfo);
 
-        $this->SendDebug(__FUNCTION__, 'old=' . $oldVersion . ', new=' . $newVersion, 0);
+        $m = 'old=' . $oldVersion . ', new=' . $newVersion;
 
         $eq = $oldVersion == $newVersion;
 
         if ($eq == true) {
-            $this->SendDebug(__FUNCTION__, 'equal version, nothing todo', 0);
+            $this->SendDebug(__FUNCTION__, 'equal version, nothing todo (' . $m . ')', 0);
             return true;
         }
 
         if (method_exists($this, 'CompleteModuleUpdate')) {
             if ($this->CompleteModuleUpdate($oldInfo, $newInfo) == false) {
-                $this->SendDebug(__FUNCTION__, 'unable to perform update', 0);
+                $this->SendDebug(__FUNCTION__, 'unable to perform update (' . $m . ')', 0);
                 return false;
             }
-            $this->SendDebug(__FUNCTION__, 'different version, something done', 0);
+            $this->SendDebug(__FUNCTION__, 'update completed (' . $m . ')', 0);
         } else {
-            $this->SendDebug(__FUNCTION__, 'different version, nothing done', 0);
+            $this->SendDebug(__FUNCTION__, 'different version but nothing done (' . $m . ')', 0);
         }
 
         $newInfo['tstamp'] = time();
