@@ -541,13 +541,13 @@ trait StubsCommonLib
         return $txt;
     }
 
-    private function TranslateFormat(string $str, array $vars = null)
+    private function TranslateFormat(string $text, array $vars = null)
     {
-        $str = $this->Translate($str);
+        $s = $this->Translate($text);
         if ($vars != null) {
-            $str = strtr($str, $vars);
+            $s = strtr($s, $vars);
         }
-        return $str;
+        return $s;
     }
 
     private function InstanceInfo(int $instID)
@@ -632,13 +632,22 @@ trait StubsCommonLib
         }
         $s .= '  Source: ' . $src . PHP_EOL;
 
+        @$updateInfo = $this->ReadAttributeString('UpdateInfo');
+        if ($updateInfo != false) {
+            @$updateInfo = json_decode($updateInfo, true);
+            $ts = isset($updateInfo['tstamp']) ? $updateInfo['tstamp'] : 0;
+            $u = $ts > 0 ? date('d.m.Y H:i:s', $ts) : '-';
+            $s .= PHP_EOL;
+            $s .= 'Updated: ' . $u . PHP_EOL;
+        }
+
         $this->SendDebug(__FUNCTION__, implode(', ', $m), 0);
         return $s;
     }
 
-    private function GetInformationForm()
+    private function GetInformationFormAction()
     {
-        $form = [
+        $formAction = [
             'type'    => 'ExpansionPanel',
             'caption' => 'Information',
             'items'   => [
@@ -648,7 +657,7 @@ trait StubsCommonLib
                 ],
             ],
         ];
-        return $form;
+        return $formAction;
     }
 
     private function ScriptType2Name($scriptType)
@@ -1045,7 +1054,7 @@ trait StubsCommonLib
         return $mod['Prefix'];
     }
 
-    private function GetReferencesForm()
+    private function GetReferencesFormAction()
     {
         $v = $this->ExplodeReferences($this->InstanceID);
         $this->SendDebug(__FUNCTION__, print_r($v, true), 0);
@@ -1058,7 +1067,7 @@ trait StubsCommonLib
         $rowCount_ReferencedVars = count($v['ReferencedVars']);
         $rowCount_ReferencedTimer = count($v['ReferencedTimer']);
 
-        $form = [
+        $formAction = [
             'type'    => 'ExpansionPanel',
             'caption' => 'References',
             'items'   => [
@@ -1246,10 +1255,16 @@ trait StubsCommonLib
                         ],
                     ],
                 ],
+
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Refresh references panel',
+                    'onClick' => 'IPS_RequestAction($id, "UpdateFormData", "");',
+                ],
             ],
             'onClick' => 'IPS_RequestAction($id, "UpdateFormData", "");',
         ];
-        return $form;
+        return $formAction;
     }
 
     private function PushCallChain(string $func)
@@ -1380,5 +1395,243 @@ trait StubsCommonLib
     {
         $this->SetTimerInterval($name, $msec);
         $this->SendDebug(__FUNCTION__, $this->PrintTimer($name), 0);
+    }
+
+    private function version2num(string $version)
+    {
+        $r = explode('.', $version);
+        $num = 0;
+        for ($i = 0; $i < 3; $i++) {
+            $num *= 1000;
+            $num += isset($r[$i]) ? intval($r[$i]) : 0;
+        }
+        return $num;
+    }
+
+    private function version2str($info)
+    {
+        $s = '';
+        if (is_array($info) && isset($info['Version'])) {
+            $s .= $info['Version'];
+            if (isset($info['Build']) && $info['Build'] > 0) {
+                $s .= '#' . $info['Build'];
+            }
+            if (isset($info['Date']) && $info['Date'] > 0) {
+                $s .= ' (' . date('d.m.Y H:i:s', $info['Date']) . ')';
+            }
+        }
+        return $s;
+    }
+
+    private function CheckUpdate()
+    {
+        $inst = IPS_GetInstance($this->InstanceID);
+        $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
+        $lib = IPS_GetLibrary($mod['LibraryID']);
+
+        @$updateInfo = $this->ReadAttributeString('UpdateInfo');
+        $oldInfo = json_decode($updateInfo != false ? $updateInfo : '', true);
+        if ($oldInfo == false) {
+            $oldInfo = [];
+        }
+        $oldVersion = $this->version2str($oldInfo);
+
+        $newInfo = [
+            'Version' => $lib['Version'],
+            'Build'   => $lib['Build'],
+            'Date'    => $lib['Date'],
+        ];
+        $newVersion = $this->version2str($newInfo);
+
+        $this->SendDebug(__FUNCTION__, 'old=' . $oldVersion . ', new=' . $newVersion, 0);
+
+        $eq = $oldVersion == $newVersion;
+
+        if ($eq == true) {
+            $this->SendDebug(__FUNCTION__, 'equal version', 0);
+            return false;
+        }
+
+        if (method_exists($this, 'CheckModuleUpdate')) {
+            $r = $this->CheckModuleUpdate($oldInfo, $newInfo);
+            if ($r != []) {
+                $this->SendDebug(__FUNCTION__, 'different version, something todo', 0);
+                $s = $this->Translate('Still something to do to complete the update') . PHP_EOL;
+                foreach ($r as $p) {
+                    $s .= '- ' . $p . PHP_EOL;
+                }
+
+                $s .= PHP_EOL;
+                $s .= PHP_EOL;
+
+                $s .= $this->Translate('old version') . ': ' . ($oldVersion != '' ? $oldVersion : $this->Translate('unknown')) . PHP_EOL;
+                $s .= $this->Translate('new version') . ': ' . $newVersion . PHP_EOL;
+
+                $s .= PHP_EOL;
+                $s .= PHP_EOL;
+
+                $s .= $this->Translate('Press button \'Complete update\' to carry out the required work');
+                return $s;
+            }
+        }
+
+        $this->SendDebug(__FUNCTION__, 'different version, nothing todo', 0);
+
+        $newInfo['tstamp'] = time();
+        $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
+
+        return false;
+    }
+
+    public function CompleteUpdate()
+    {
+        $inst = IPS_GetInstance($this->InstanceID);
+        $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
+        $lib = IPS_GetLibrary($mod['LibraryID']);
+
+        @$updateInfo = $this->ReadAttributeString('UpdateInfo');
+        $oldInfo = json_decode($updateInfo != false ? $updateInfo : '', true);
+        if ($oldInfo == false) {
+            $oldInfo = [];
+        }
+        $oldVersion = $this->version2str($oldInfo);
+
+        $newInfo = [
+            'Version' => $lib['Version'],
+            'Build'   => $lib['Build'],
+            'Date'    => $lib['Date'],
+        ];
+        $newVersion = $this->version2str($newInfo);
+
+        $this->SendDebug(__FUNCTION__, 'old=' . $oldVersion . ', new=' . $newVersion, 0);
+
+        $eq = $oldVersion == $newVersion;
+
+        if ($eq == true) {
+            $this->SendDebug(__FUNCTION__, 'equal version, nothing todo', 0);
+            return true;
+        }
+
+        if (method_exists($this, 'CompleteModuleUpdate')) {
+            if ($this->CompleteModuleUpdate($oldInfo, $newInfo) == false) {
+                $this->SendDebug(__FUNCTION__, 'unable to perform update', 0);
+                return false;
+            }
+            $this->SendDebug(__FUNCTION__, 'different version, something done', 0);
+        } else {
+            $this->SendDebug(__FUNCTION__, 'different version, nothing done', 0);
+        }
+
+        $newInfo['tstamp'] = time();
+        $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
+
+        IPS_ApplyChanges($this->InstanceID);
+
+        return true;
+    }
+
+    private function GetCompleteUpdateFormAction()
+    {
+        $formAction = [
+            'type'    => 'Button',
+            'caption' => 'Complete update',
+            'onClick' => $this->GetModulePrefix() . '_CompleteUpdate($id);'
+        ];
+        return $formAction;
+    }
+
+    private function GetCheckUpdateFormElement()
+    {
+        $formElements = [];
+
+        @$s = $this->CheckUpdate();
+        if ($s != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $s,
+            ];
+        }
+
+        return $formElements;
+    }
+
+    private function CheckPrerequisites()
+    {
+        $s = '';
+        $r = [];
+
+        if (method_exists($this, 'CheckModulePrerequisites')) {
+            $r = $this->CheckModulePrerequisites();
+        }
+
+        if ($r != []) {
+            $s = $this->Translate('The following system prerequisites are missing') . ': ' . implode(', ', $r);
+        }
+
+        return $s;
+    }
+
+    private function CheckConfiguration()
+    {
+        $s = '';
+        $r = [];
+
+        if (method_exists($this, 'CheckModuleConfiguration')) {
+            $r = $this->CheckModuleConfiguration();
+        }
+
+        if ($r != []) {
+            $s = $this->Translate('The following points of the configuration are incorrect') . ':' . PHP_EOL;
+            foreach ($r as $p) {
+                $s .= '- ' . $p . PHP_EOL;
+            }
+        }
+
+        return $s;
+    }
+
+    private function GetCommonFormElements($title)
+    {
+        $formElements = [];
+
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => $title,
+        ];
+
+        $inst = IPS_GetInstance($this->InstanceID);
+        $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
+        if ($mod['ParentRequirements'] != []) {
+            if ($this->HasActiveParent() == false) {
+                $formElements[] = [
+                    'type'    => 'Label',
+                    'caption' => 'Instance has no active parent instance',
+                ];
+            }
+        }
+
+        @$s = $this->CheckConfiguration();
+        if ($s != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $s,
+            ];
+            $formElements[] = [
+                'type'    => 'Label',
+            ];
+        }
+
+        @$s = $this->CheckPrerequisites();
+        if ($s != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $s,
+            ];
+            $formElements[] = [
+                'type'    => 'Label',
+            ];
+        }
+
+        return $formElements;
     }
 }

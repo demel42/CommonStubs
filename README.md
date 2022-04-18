@@ -45,7 +45,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string GetStatusText()`<br>
 <br>
 
-`string TranslateFormat(string $str, array $vars = null)`<br>
+`string TranslateFormat(string $text, array $vars = null)`<br>
 <br>
 
 `string PrintTimer(string $name)`<br>
@@ -59,22 +59,11 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `int GetConnectStatus()`<br>
 `string GetConnectStatusText()`<br>
 
-Ergänzung der *locale.json*
-```
-"Status: Symcon Connect is OK!": "Status: Symcon Connect ist OK!",
-"Error: Symcon Connect is not active!": "Fehler: Symcon Connect ist nicht aktiv!",
-```
-
 `int GetConnectionID()`<br>
 <br>
 
 `string InstanceInfo(int $instID)`<br>
-`array GetInformationForm()`<br>
-
-Ergänzung der *locale.json*
-```
-"Information": "Information",
-```
+`array GetInformationFormAction()`<br>
 
 `string ScriptType2Name(int $scriptType)`<br>
 `string EventType2Name(int $eventType)`<br>
@@ -85,10 +74,58 @@ Ergänzung der *locale.json*
 `string GetModulePrefix()`<br>
 
 `array ExplodeReferences(int $instID)`<br>
-`array GetReferencesForm()`<br>
+`array GetReferencesFormAction()`<br>
+
+`void PushCallChain(string $func)`<br>
+`void PopCallChain(string $func)`<br>
+`string PrintCallChain(bool $complete)`<br>
+
+`string CheckPrerequisites()`<br>
+dazu bei Bedarf in module.php: `array CheckModulePrerequisites()`<br>
+`string CheckConfiguration()`<br>
+dazu bei Bedarf in module.php: `array CheckModuleConfiguration()`<br>
+`array GetCommonFormElements(string $title)`<br>
+
+`int version2num(string $version)`<br>
+`string version2str(array $info)`<br>
+
+`string CheckUpdate()`<br>
+dazu bei Bedarf in module.php: `string CheckModuleUpdate(array $oldInfo, array $newInfo)`<br>
+`bool CompleteUpdate()`<br>
+dazu bei Bedarf in module.php: `bool CompletekModuleUpdate(array $oldInfo, array $newInfo)`<br>
+`array GetCompleteUpdateFormAction()`<br>
+`array GetCheckUpdateFormElement()`<br>
+
 
 Ergänzung der *locale.json*
 ```
+"The following system prerequisites are missing": "Folgende Systemvoraussetzungen fehlen",
+
+"The following points of the configuration are incorrect": "Die folgenden Punkte der Konfiguration sind fehlerhaft",
+
+"Still something to do to complete the update": "Es ist noch etwas zu tun, um das Update abzuschließen",
+"old version": "alte Version",
+"new version": "neue Version",
+"unknwon": "unbekannt",
+"Press button 'Complete update' to carry out the required work": "Taste 'Update abschliessen' betätigen um die erforderlichen Arbeiten auszuführen",
+"Complete update": "Update abschliessen",
+
+"Status: Symcon Connect is OK!": "Status: Symcon Connect ist OK!",
+"Error: Symcon Connect is not active!": "Fehler: Symcon Connect ist nicht aktiv!",
+
+"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
+
+
+"Disable instance": "Instanz deaktivieren",
+
+
+"Expert area": "Experten-Bereich",
+"Re-install variable-profiles": "Variablenprofile erneut einrichten",
+
+"Information": "Information",
+
+"Test area": "Test-Bereich",
+
 "Category": "Kategorie",
 "Instance": "Instanz",
 "Variable": "Variable",
@@ -115,8 +152,17 @@ Ergänzung der *locale.json*
 "Next run": "nächste Ausführung",
 "Last run": "letzte Ausführung",
 "Timer information": "Timer-Information",
-```
+"Refresh references panel": "Referenzen-Panel aktualisieren",
 
-`void PushCallChain(string $func)`<br>
-`void PopCallChain(string $func)`<br>
-`string PrintCallChain(bool $complete)`<br>
+"Instance getting created": "Instanz wird erstellt",
+"Instance is active": "Instanz ist aktiv",
+"Instance is deleted": "Instanz wird gelöscht",
+"Instance is inactive": "Instanz ist inaktiv",
+"Instance is not created": "Instanz wurde nicht erzeugt",
+
+"Instance is inactive (invalid preconditions)": "Instanz ist inaktiv (ungültige Voraussetzungen)",
+"Instance is inactive (update not completed)": "Instanz ist inaktiv (Update nicht abgeschlossen)",
+"Instance is inactive (invalid configuration)": "Instanz ist inaktiv (ungültige Konfiguration)",
+"Instance is inactive (deactivated)": "Instanz ist inaktiv (deaktiviert)",
+
+```
