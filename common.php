@@ -1480,8 +1480,6 @@ trait StubsCommonLib
         $newInfo['tstamp'] = time();
         $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
 
-        IPS_ApplyChanges($this->InstanceID);
-
         return false;
     }
 
@@ -1513,8 +1511,23 @@ trait StubsCommonLib
             $this->SendDebug(__FUNCTION__, 'equal version, nothing todo (' . $m . ')', 0);
         } else {
             if (method_exists($this, 'CompleteModuleUpdate')) {
-                if ($this->CompleteModuleUpdate($oldInfo, $newInfo) == false) {
-                    $this->SendDebug(__FUNCTION__, 'unable to perform update (' . $m . ')', 0);
+                $r = $this->CompleteModuleUpdate($oldInfo, $newInfo);
+                if ($r != false) {
+                    $this->SendDebug(__FUNCTION__, 'unable to complete the update (' . $m . ') => ' . $r, 0);
+
+                    $s = $this->Translate('Unable to complete the update') . PHP_EOL;
+                    $s .= PHP_EOL;
+                    $s .= $r . PHP_EOL;
+                    $s .= PHP_EOL;
+                    $s .= PHP_EOL;
+
+                    $s .= $this->Translate('old version') . ': ' . ($oldVersion != '' ? $oldVersion : $this->Translate('unknown')) . PHP_EOL;
+                    $s .= $this->Translate('new version') . ': ' . $newVersion . PHP_EOL;
+                    $s .= PHP_EOL;
+                    $s .= PHP_EOL;
+                    $s .= $this->Translate('please contact the author') . PHP_EOL;
+                    echo $s;
+
                     return false;
                 }
                 $this->SendDebug(__FUNCTION__, 'update completed (' . $m . ')', 0);
@@ -1527,7 +1540,6 @@ trait StubsCommonLib
         $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
 
         IPS_ApplyChanges($this->InstanceID);
-
         return true;
     }
 

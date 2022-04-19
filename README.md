@@ -92,7 +92,7 @@ dazu bei Bedarf in module.php: `array CheckModuleConfiguration()`<br>
 `string CheckUpdate()`<br>
 dazu bei Bedarf in module.php: `string CheckModuleUpdate(array $oldInfo, array $newInfo)`<br>
 `bool CompleteUpdate()`<br>
-dazu bei Bedarf in module.php: `bool CompletekModuleUpdate(array $oldInfo, array $newInfo)`<br>
+dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, array $newInfo)`<br>
 `array GetCompleteUpdateFormAction()`<br>
 
 Definierte Konstanten
@@ -115,6 +115,8 @@ Ergänzung der *locale.json*
 "unknwon": "unbekannt",
 "Press button 'Complete update' to carry out the required work": "Taste 'Update abschliessen' betätigen um die erforderlichen Arbeiten auszuführen",
 "Complete update": "Update abschliessen",
+"Unable to complete the update": "Das Update kann nicht abgeschlossen werden",
+"please contact the author": "Bitte kontaktieren Sie den Autor",
 
 "Status: Symcon Connect is OK!": "Status: Symcon Connect ist OK!",
 "Error: Symcon Connect is not active!": "Fehler: Symcon Connect ist nicht aktiv!",
