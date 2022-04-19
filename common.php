@@ -354,6 +354,16 @@ trait StubsCommonLib
         return $duration;
     }
 
+    private function int2bitmap(int $val, int $n)
+    {
+        $s = '';
+        for ($i = $n - 1; $i >= 0; $i--) {
+            $x = 1 << $i;
+            $s .= ($val & $x) == $x ? '1' : '0';
+        }
+        return $s;
+    }
+
     private function format_float(float $number, int $dec_points = -1)
     {
         if (is_numeric((float) $number)) {
