@@ -102,6 +102,7 @@ IS_INVALIDPREREQUISITES
 IS_UPDATEUNCOMPLETED
 IS_INVALIDCONFIG
 IS_DEACTIVATED
+IS_NOSYMCONCONNECT
 ```
 
 Ergänzung der *locale.json*
@@ -173,5 +174,5 @@ Ergänzung der *locale.json*
 "Instance is inactive (update not completed)": "Instanz ist inaktiv (Update nicht abgeschlossen)",
 "Instance is inactive (invalid configuration)": "Instanz ist inaktiv (ungültige Konfiguration)",
 "Instance is inactive (deactivated)": "Instanz ist inaktiv (deaktiviert)",
-
+"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
 ```

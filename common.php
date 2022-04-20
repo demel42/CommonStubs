@@ -1658,6 +1658,7 @@ trait StubsCommonLib
     public static $IS_UPDATEUNCOMPLETED = IS_EBASE + 2;
     public static $IS_INVALIDCONFIG = IS_EBASE + 3;
     public static $IS_DEACTIVATED = IS_EBASE + 4;
+    public static $IS_NOSYMCONCONNECT = IS_EBASE + 5;
 
     private function GetCommonFormStatus()
     {
@@ -1672,6 +1673,7 @@ trait StubsCommonLib
             ['code' => self::$IS_UPDATEUNCOMPLETED, 'icon' => 'error', 'caption' => 'Instance is inactive (update not completed)'],
             ['code' => self::$IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid configuration)'],
             ['code' => self::$IS_DEACTIVATED, 'icon' => 'inactive', 'caption' => 'Instance is inactive (deactivated)'],
+            ['code' => self::$IS_NOSYMCONCONNECT, 'icon' => 'error', 'caption' => 'Instance is inactive (no Symcon-Connect)']
         ];
 
         return $formStatus;
