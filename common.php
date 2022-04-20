@@ -1605,10 +1605,19 @@ trait StubsCommonLib
     {
         $formElements = [];
 
-        $formElements[] = [
-            'type'    => 'Label',
-            'caption' => $title,
-        ];
+        if (method_exists($this, 'GetBrandImage')) {
+            $formElements[] = [
+                'type'  => 'Image',
+                'image' => 'data:image/png;base64,' . $this->GetBrandImage()
+            ];
+        }
+
+        if ($title != '') {
+            $formElements[] = [
+                'type'    => 'Label',
+                'caption' => $title,
+            ];
+        }
 
         if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
             $formElements[] = [
