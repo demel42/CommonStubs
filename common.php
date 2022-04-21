@@ -1407,8 +1407,11 @@ trait StubsCommonLib
         $this->SendDebug(__FUNCTION__, $this->PrintTimer($name), 0);
     }
 
-    private function version2num(string $version)
+    private function version2num($version)
     {
+        if (is_array($version)) {
+            $version = isset($version['Version']) ? $version['Version'] : '';
+        }
         $r = explode('.', $version);
         $num = 0;
         for ($i = 0; $i < 3; $i++) {
@@ -1478,6 +1481,9 @@ trait StubsCommonLib
                 $s .= $this->Translate('new version') . ': ' . $newVersion . PHP_EOL;
 
                 $s .= PHP_EOL;
+                $s .= PHP_EOL;
+
+                $s .= $this->Translate('The use of possible affected status variables can be checked in the expansion panel "References"') . PHP_EOL;
                 $s .= PHP_EOL;
 
                 $s .= $this->Translate('Press button \'Complete update\' to carry out the required work');

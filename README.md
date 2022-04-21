@@ -116,6 +116,8 @@ Ergänzung der *locale.json*
 "new version": "neue Version",
 "unknwon": "unbekannt",
 "Press button 'Complete update' to carry out the required work": "Taste 'Update abschliessen' betätigen um die erforderlichen Arbeiten auszuführen",
+"The use of possible affected status variables can be checked in the expansion panel \"References\"":
+	"Die Verwendung möglicherweise betroffener Statusvariablen kann im Erweiterungspanel \"Referenzen\" überprüft werden",
 "Complete update": "Update abschliessen",
 "Unable to complete the update": "Das Update kann nicht abgeschlossen werden",
 "please contact the author": "Bitte kontaktieren Sie den Autor",
