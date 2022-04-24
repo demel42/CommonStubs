@@ -74,6 +74,8 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 
 `string GetModulePrefix()`<br>
 
+`void MaintainReferences(array $propertyNames)`<br>
+
 `array ExplodeReferences(int $instID)`<br>
 `array GetReferencesFormAction()`<br>
 

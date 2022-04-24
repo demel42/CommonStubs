@@ -745,6 +745,22 @@ trait StubsCommonLib
         return ($a['TimerID'] < $b['TimerID']) ? -1 : 1;
     }
 
+    private function MaintainReferences(array $propertyNames = null)
+    {
+        $refs = $this->GetReferenceList();
+        foreach ($refs as $ref) {
+            $this->UnregisterReference($ref);
+        }
+		if (is_array($propertyNames)) {
+        foreach ($propertyNames as $name) {
+            $oid = $this->ReadPropertyInteger($name);
+            if ($oid >= 10000) {
+                $this->RegisterReference($oid);
+            }
+        }
+        }
+    }
+
     private function ExplodeReferences($instID)
     {
         $inst = IPS_GetInstance($instID);
