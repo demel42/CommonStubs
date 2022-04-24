@@ -751,13 +751,13 @@ trait StubsCommonLib
         foreach ($refs as $ref) {
             $this->UnregisterReference($ref);
         }
-		if (is_array($propertyNames)) {
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
+        if (is_array($propertyNames)) {
+            foreach ($propertyNames as $name) {
+                $oid = $this->ReadPropertyInteger($name);
+                if ($oid >= 10000) {
+                    $this->RegisterReference($oid);
+                }
             }
-        }
         }
     }
 
