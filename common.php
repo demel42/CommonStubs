@@ -65,7 +65,7 @@ trait StubsCommonLib
             if ($associations != null) {
                 foreach ($associations as $a) {
                     $w = isset($a['Wert']) ? $a['Wert'] : '';
-                    $n = isset($a['Name']) ? $a['Name'] : '';
+                    $n = isset($a['Name']) ? $this->Translate($a['Name']) : '';
                     $i = isset($a['Icon']) ? $a['Icon'] : '';
                     $f = isset($a['Farbe']) ? $a['Farbe'] : 0;
                     IPS_SetVariableProfileAssociation($ident, $w, $n, $i, $f);
@@ -489,18 +489,104 @@ trait StubsCommonLib
         return $result;
     }
 
+    private $translationCache = '';
+
+    private function GetTranslations()
+    {
+        $translations = $this->translationCache;
+        if ($translations == '') {
+            $translations = [];
+            foreach (['/../libs/CommonStubs/', '/../libs/', '/'] as $subdir) {
+                $m = '';
+                $filename = $this->ModuleDir . $subdir . 'translation.json';
+                if (file_exists($filename)) {
+                    $s = file_get_contents($filename);
+                    if ($s != false) {
+                        $j = json_decode($s, true);
+                        if (is_array($j)) {
+                            if (isset($j['translations'])) {
+                                $translations = array_replace_recursive($translations, $j['translations']);
+                            } else {
+                                $m .= 'invalid format';
+                            }
+                        } else {
+                            $m .= 'unable to decode json';
+                        }
+                    } else {
+                        $m .= 'empty';
+                    }
+                } else {
+                    $m .= 'not found';
+                }
+                if ($m != '') {
+                    $this->SendDebug(__FUNCTION__, 'filename=' . $filename . ' - ' . $m, 0);
+                }
+            }
+            // $this->SendDebug(__FUNCTION__, 'translations=' . print_r($translations, true), 0);
+            $this->translationCache = $translations;
+        }
+        return $translations;
+    }
+
+    public function Translate($text)
+    {
+        $b = false;
+        $translations = $this->GetTranslations();
+        if ($translations != false) {
+            if (IPS_GetKernelVersion() >= 6.1) {
+                $lang = IPS_GetSystemLanguage();
+            } else {
+                $lang = isset($_ENV['LANG']) ? $_ENV['LANG'] : '';
+                if (preg_match('/([^\.]*)\..*/', $lang, $r)) {
+                    $lang = $r[1];
+                }
+            }
+            if (isset($translations[$lang][$text])) {
+                $text = $translations[$lang][$text];
+                $b = true;
+            } else {
+                $code = explode('_', $lang)[0];
+                if (isset($translations[$code][$text])) {
+                    $text = $translations[$code][$text];
+                    $b = true;
+                }
+            }
+        }
+        if ($b == false) {
+            $this->SendDebug(__FUNCTION__, 'unable to translate "' . $text . '"', 0);
+        }
+        return $text;
+    }
+
+    private function TranslateFormat(string $text, array $vars = null)
+    {
+        $s = $this->Translate($text);
+        if ($vars != null) {
+            $s = strtr($s, $vars);
+        }
+        return $s;
+    }
+
     public function GetConfigurationForm()
     {
         $formElements = $this->GetFormElements();
         $formActions = $this->GetFormActions();
         $formStatus = $this->GetFormStatus();
+        $translations = $this->GetTranslations();
 
-        $form = json_encode(['elements' => $formElements, 'actions' => $formActions, 'status' => $formStatus]);
+        $jform = [
+            'elements'     => $formElements,
+            'actions'      => $formActions,
+            'status'       => $formStatus,
+            'translations' => $translations,
+        ];
+        $form = json_encode($jform);
         if ($form == '') {
             $this->SendDebug(__FUNCTION__, 'json_error=' . json_last_error_msg(), 0);
-            $this->SendDebug(__FUNCTION__, '=> formElements=' . print_r($formElements, true), 0);
-            $this->SendDebug(__FUNCTION__, '=> formActions=' . print_r($formActions, true), 0);
-            $this->SendDebug(__FUNCTION__, '=> formStatus=' . print_r($formStatus, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> elements=' . print_r($formElements, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> actions=' . print_r($formActions, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> status=' . print_r($formStatus, true), 0);
+            $this->SendDebug(__FUNCTION__, '=> translations=' . print_r($translations, true), 0);
         }
         return $form;
     }
@@ -549,15 +635,6 @@ trait StubsCommonLib
         }
 
         return $txt;
-    }
-
-    private function TranslateFormat(string $text, array $vars = null)
-    {
-        $s = $this->Translate($text);
-        if ($vars != null) {
-            $s = strtr($s, $vars);
-        }
-        return $s;
     }
 
     private function InstanceInfo(int $instID)
@@ -1071,6 +1148,11 @@ trait StubsCommonLib
                 break;
         }
         return $r;
+    }
+
+    private function GetModuleDir()
+    {
+        return $this->ModuleDir;
     }
 
     private function GetModulePrefix()
@@ -1688,8 +1770,7 @@ trait StubsCommonLib
     public static $IS_INVALIDPREREQUISITES = IS_EBASE + 1;
     public static $IS_UPDATEUNCOMPLETED = IS_EBASE + 2;
     public static $IS_INVALIDCONFIG = IS_EBASE + 3;
-    public static $IS_DEACTIVATED = IS_EBASE + 4;
-    public static $IS_NOSYMCONCONNECT = IS_EBASE + 5;
+    public static $IS_NOSYMCONCONNECT = IS_EBASE + 4;
 
     private function GetCommonFormStatus()
     {
@@ -1703,7 +1784,6 @@ trait StubsCommonLib
             ['code' => self::$IS_INVALIDPREREQUISITES, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid preconditions)'],
             ['code' => self::$IS_UPDATEUNCOMPLETED, 'icon' => 'error', 'caption' => 'Instance is inactive (update not completed)'],
             ['code' => self::$IS_INVALIDCONFIG, 'icon' => 'error', 'caption' => 'Instance is inactive (invalid configuration)'],
-            ['code' => self::$IS_DEACTIVATED, 'icon' => 'inactive', 'caption' => 'Instance is inactive (deactivated)'],
             ['code' => self::$IS_NOSYMCONCONNECT, 'icon' => 'error', 'caption' => 'Instance is inactive (no Symcon-Connect)']
         ];
 

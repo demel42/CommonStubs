@@ -46,6 +46,8 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string GetStatusText()`<br>
 <br>
 
+`array GetTranslations()`<br>
+`string Translate(string $text)`<br>
 `string TranslateFormat(string $text, array $vars = null)`<br>
 <br>
 
