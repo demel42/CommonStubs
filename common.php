@@ -335,8 +335,11 @@ trait StubsCommonLib
         return $bval;
     }
 
-    private function seconds2duration(int $sec)
+    private function seconds2duration(float $val)
     {
+        $sec = (int) $val;
+        $msec = ($val * 1000) % 1000;
+
         $duration = '';
         if ($sec >= 3600) {
             $duration .= sprintf('%dh', floor($sec / 3600));
@@ -347,10 +350,12 @@ trait StubsCommonLib
             $sec = $sec % 60;
         }
         if ($sec > 0) {
-            $duration .= sprintf('%ds', $sec);
+            $duration .= sprintf('%ds', (int) $sec);
             $sec = floor($sec);
         }
-
+        if ($msec > 0) {
+            $duration .= sprintf('%dms', $msec);
+        }
         return $duration;
     }
 

@@ -37,7 +37,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string LimitOutput(string $str, int $maxLength = null)`<br>
 `string bool2str(bool $bval)`<br>
 `string format_float(float $number, int $dec_points)`<br>
-`string seconds2duration(int $sec)`<br>
+`string seconds2duration(float $sec)`<br>
 `string int2bitmap(int $val, int $n)`<br>
 `string HttpCode2Text(int $code)`<br>
 <br>
