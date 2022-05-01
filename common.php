@@ -49,6 +49,18 @@ trait StubsCommonLib
         return $ret;
     }
 
+    protected function GetValueFormatted($ident)
+    {
+        @$varID = $this->GetIDForIdent($ident);
+        if ($varID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
+            return false;
+        }
+
+        $ret = GetValueFormatted($varID);
+        return $ret;
+    }
+
     private function CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)
     {
         if ($doReinstall && IPS_VariableProfileExists($ident)) {

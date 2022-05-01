@@ -5,6 +5,7 @@
 `bool SetValue(string $ident, mixed $value)`<br>
 `bool SaveValue(string $ident, mixed $value, bool &$isChanged)`<br>
 `mixed GetValue(string $ident)`<br>
+`mixed GetValueFormatted(string $ident)`<br>
 <br>
 
 `void CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)`<br>
