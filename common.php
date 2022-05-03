@@ -77,7 +77,7 @@ trait StubsCommonLib
             if ($associations != null) {
                 foreach ($associations as $a) {
                     $w = isset($a['Wert']) ? $a['Wert'] : '';
-                    $n = isset($a['Name']) ? $this->Translate($a['Name']) : '';
+                    $n = isset($a['Name']) ? $a['Name'] : '';
                     $i = isset($a['Icon']) ? $a['Icon'] : '';
                     $f = isset($a['Farbe']) ? $a['Farbe'] : 0;
                     IPS_SetVariableProfileAssociation($ident, $w, $n, $i, $f);
