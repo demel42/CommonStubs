@@ -839,6 +839,11 @@ trait StubsCommonLib
         return ($a['TimerID'] < $b['TimerID']) ? -1 : 1;
     }
 
+    private function IdIsValid($id)
+    {
+        return $id >= 10000;
+    }
+
     private function MaintainReferences(array $propertyNames = null)
     {
         $refs = $this->GetReferenceList();
@@ -848,7 +853,7 @@ trait StubsCommonLib
         if (is_array($propertyNames)) {
             foreach ($propertyNames as $name) {
                 $oid = $this->ReadPropertyInteger($name);
-                if ($oid >= 10000) {
+                if ($this->IdIsValid($oid)) {
                     $this->RegisterReference($oid);
                 }
             }
