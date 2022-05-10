@@ -43,6 +43,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string HttpCode2Text(int $code)`<br>
 <br>
 
+`array GetConfiguratorLocation(int $catID)`<br>
 `string GetConfigurationForm()`<br>
 `string GetStatusText()`<br>
 <br>

@@ -584,6 +584,21 @@ trait StubsCommonLib
         return $s;
     }
 
+    private function GetConfiguratorLocation(int $catID)
+    {
+        $tree_position = [];
+        if (IPS_CategoryExists($catID)) {
+            $tree_position[] = IPS_GetName($catID);
+            $parID = IPS_GetObject($catID)['ParentID'];
+            while ($parID > 0) {
+                $tree_position[] = IPS_GetName($parID);
+                $parID = IPS_GetObject($parID)['ParentID'];
+            }
+            $tree_position = array_reverse($tree_position);
+        }
+        return $tree_position;
+    }
+
     public function GetConfigurationForm()
     {
         $formElements = $this->GetFormElements();
