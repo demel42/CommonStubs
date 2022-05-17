@@ -898,6 +898,9 @@ trait StubsCommonLib
         $referencing = [];
         $refIDs = IPS_GetReferenceList($instID);
         foreach ($refIDs as $objID) {
+            if (IPS_ObjectExists($objID) == false) {
+                continue;
+            }
             $obj = IPS_GetObject($objID);
             $objectType = $obj['ObjectType'];
             switch ($objectType) {
@@ -983,6 +986,9 @@ trait StubsCommonLib
         $refs = UC_FindReferences($ucID, $instID);
         foreach ($refs as $ref) {
             $objID = $ref['ObjectID'];
+            if (IPS_ObjectExists($objID) == false) {
+                continue;
+            }
             $obj = IPS_GetObject($objID);
             $objectType = $obj['ObjectType'];
             switch ($objectType) {
@@ -1018,6 +1024,9 @@ trait StubsCommonLib
         }
         $objIDs = IPS_GetChildrenIDs($instID);
         foreach ($objIDs as $objID) {
+            if (IPS_ObjectExists($objID) == false) {
+                continue;
+            }
             $obj = IPS_GetObject($objID);
             $objectType = $obj['ObjectType'];
             if ($objectType != OBJECTTYPE_EVENT) {
@@ -1043,6 +1052,9 @@ trait StubsCommonLib
         $rferencedVars = [];
         $objIDs = IPS_GetChildrenIDs($instID);
         foreach ($objIDs as $objID) {
+            if (IPS_ObjectExists($objID) == false) {
+                continue;
+            }
             $obj = IPS_GetObject($objID);
             $objectType = $obj['ObjectType'];
             if ($objectType != OBJECTTYPE_VARIABLE) {
