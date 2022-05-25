@@ -1233,6 +1233,10 @@ trait StubsCommonLib
                 $this->UpdateFormField('MessagePopup', 'visible', true);
                 $r = true;
                 break;
+            case 'CompleteUpdate':
+                $this->CompleteUpdate();
+                $r = true;
+                break;
             default:
                 break;
         }
@@ -1750,7 +1754,7 @@ trait StubsCommonLib
         $formAction = [
             'type'    => 'Button',
             'caption' => 'Complete update',
-            'onClick' => $this->GetModulePrefix() . '_CompleteUpdate($id);'
+            'onClick' => 'IPS_RequestAction($id, "CompleteUpdate", "");',
         ];
         return $formAction;
     }
