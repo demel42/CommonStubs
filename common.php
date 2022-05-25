@@ -1686,7 +1686,7 @@ trait StubsCommonLib
         return false;
     }
 
-    public function CompleteUpdate()
+    private function CompleteUpdate()
     {
         $inst = IPS_GetInstance($this->InstanceID);
         $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
