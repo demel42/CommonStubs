@@ -1185,12 +1185,17 @@ trait StubsCommonLib
         return $r;
     }
 
+    private function PopupMessage(string $text)
+    {
+        $this->UpdateFormField('MessagePopup_text', 'caption', $text);
+        $this->UpdateFormField('MessagePopup', 'visible', true);
+    }
+
     private function CommonRequestAction(string $ident, $params)
     {
         $r = false;
         switch ($ident) {
             case 'UpdateFormField':
-                $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
                 $jparams = json_decode($params, true);
                 if (isset($jparams['field']) && isset($jparams['param']) && isset($jparams['value'])) {
                     $this->UpdateFormField($jparams['field'], $jparams['param'], $jparams['value']);
@@ -1200,7 +1205,6 @@ trait StubsCommonLib
                 $r = true;
                 break;
             case 'UpdateFormData':
-                $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
                 $jparams = json_decode($params, true);
                 if (isset($jparams['area'])) {
                     switch ($jparams['area']) {
@@ -1228,9 +1232,7 @@ trait StubsCommonLib
                 $r = true;
                 break;
             case 'PopupMessage':
-                $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
-                $this->UpdateFormField('MessagePopup_text', 'caption', $params);
-                $this->UpdateFormField('MessagePopup', 'visible', true);
+                $this->PopupMessage($params);
                 $r = true;
                 break;
             case 'CompleteUpdate':

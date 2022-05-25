@@ -66,6 +66,8 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 
 `int GetConnectionID()`<br>
 
+`void PopupMessage(string $text)`<br>
+
 `array GetInstallVarProfilesFormItem()`<br>
 
 `string InstanceInfo(int $instID)`<br>
