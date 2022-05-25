@@ -547,6 +547,10 @@ trait StubsCommonLib
 
     public function Translate($text)
     {
+        if ($text == '') {
+            return $text;
+        }
+
         $b = false;
         $translations = $this->GetTranslations();
         if ($translations != false) {
@@ -777,6 +781,16 @@ trait StubsCommonLib
             ],
         ];
         return $formAction;
+    }
+
+    private function GetInstallVarProfilesFormItem()
+    {
+        $item = [
+            'type'    => 'Button',
+            'caption' => 'Re-install variable-profiles',
+            'onClick' => 'IPS_RequestAction($id, "InstallVarProfiles", "");'
+        ];
+        return $item;
     }
 
     private function ScriptType2Name($scriptType)
@@ -1180,17 +1194,43 @@ trait StubsCommonLib
                 $jparams = json_decode($params, true);
                 if (isset($jparams['field']) && isset($jparams['param']) && isset($jparams['value'])) {
                     $this->UpdateFormField($jparams['field'], $jparams['param'], $jparams['value']);
-                    $r = true;
                 } else {
                     $this->SendDebug(__FUNCTION__, 'params must include field, param, value', 0);
                 }
+                $r = true;
                 break;
             case 'UpdateFormData':
-                $v = $this->ExplodeReferences($this->InstanceID);
-                foreach (['ReferencedBy', 'Referencing', 'ReferencedVars', 'ReferencedTimer'] as $ident) {
-                    $this->UpdateFormField($ident, 'values', json_encode($v[$ident]));
-                    $this->UpdateFormField($ident, 'rowCount', count($v[$ident]));
+                $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
+                $jparams = json_decode($params, true);
+                if (isset($jparams['area'])) {
+                    switch ($jparams['area']) {
+                        case 'References':
+                            $v = $this->ExplodeReferences($this->InstanceID);
+                            foreach (['ReferencedBy', 'Referencing', 'ReferencedVars', 'ReferencedTimer'] as $ident) {
+                                $this->UpdateFormField($ident, 'values', json_encode($v[$ident]));
+                                $this->UpdateFormField($ident, 'rowCount', count($v[$ident]) > 0 ? count($v[$ident]) : 1);
+                            }
+                            break;
+                        case 'ModuleActivity':
+                            $logV = $this->ReadModuleActivity();
+                            $this->UpdateFormField('ModuleActivity', 'values', json_encode($logV));
+                            $this->UpdateFormField('ModuleActivity', 'rowCount', count($logV) > 0 ? count($logV) : 1);
+                            break;
+                        default:
+                            $this->SendDebug(__FUNCTION__, 'unsupported area ' . $jparams['area'], 0);
+                            break;
+                    }
                 }
+                $r = true;
+                break;
+            case 'InstallVarProfiles':
+                $this->InstallVarProfiles(true);
+                $r = true;
+                break;
+            case 'PopupMessage':
+                $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', params=' . $params, 0);
+                $this->UpdateFormField('MessagePopup_text', 'caption', $params);
+                $this->UpdateFormField('MessagePopup', 'visible', true);
                 $r = true;
                 break;
             default:
@@ -1415,11 +1455,11 @@ trait StubsCommonLib
 
                 [
                     'type'    => 'Button',
-                    'caption' => 'Refresh references panel',
-                    'onClick' => 'IPS_RequestAction($id, "UpdateFormData", "");',
+                    'caption' => 'Refresh panel',
+                    'onClick' => 'IPS_RequestAction($id, "UpdateFormData", json_encode(["area" => "References"]));',
                 ],
             ],
-            'onClick' => 'IPS_RequestAction($id, "UpdateFormData", "");',
+            'onClick' => 'IPS_RequestAction($id, "UpdateFormData", json_encode(["area" => "References"]));',
         ];
         return $formAction;
     }
@@ -1683,13 +1723,12 @@ trait StubsCommonLib
                     $s .= $r . PHP_EOL;
                     $s .= PHP_EOL;
                     $s .= PHP_EOL;
-
                     $s .= $this->Translate('old version') . ': ' . ($oldVersion != '' ? $oldVersion : $this->Translate('unknown')) . PHP_EOL;
                     $s .= $this->Translate('new version') . ': ' . $newVersion . PHP_EOL;
                     $s .= PHP_EOL;
                     $s .= PHP_EOL;
                     $s .= $this->Translate('please contact the author') . PHP_EOL;
-                    echo $s;
+                    $this->RequestAction('PopupMessage', $s);
 
                     return false;
                 }
@@ -1757,6 +1796,21 @@ trait StubsCommonLib
     private function GetCommonFormElements($title)
     {
         $formElements = [];
+
+        $formElements[] = [
+            'type'    => 'PopupAlert',
+            'name'    => 'MessagePopup',
+            'visible' => false,
+            'popup'   => [
+                'items'   => [
+                    [
+                        'type'    => 'Label',
+                        'name'    => 'MessagePopup_text',
+                        'caption' => '',
+                    ],
+                ],
+            ],
+        ];
 
         if (method_exists($this, 'GetBrandImage')) {
             $formElements[] = [
@@ -1837,5 +1891,78 @@ trait StubsCommonLib
         ];
 
         return $formStatus;
+    }
+
+    private function ReadModuleActivity()
+    {
+        $logV = json_decode($this->GetBuffer('moduleActivity'), true);
+        if ($logV == false) {
+            $logV = [];
+        }
+        return $logV;
+    }
+
+    private function AddModuleActivity(string $log, int $maxLen = 20)
+    {
+        $oldLogV = $this->ReadModuleActivity();
+        $newLogV = [];
+        if ($log != '') {
+            $newLogV[] = [
+                'tstamp' => date('d.m.Y H:i:s', time()),
+                'log'    => $log,
+            ];
+        }
+        foreach ($oldLogV as $ent) {
+            if (strlen(json_encode($newLogV)) + strlen(json_encode($ent)) > 8000) {
+                break;
+            }
+            $newLogV[] = $ent;
+            if (count($newLogV) == $maxLen) {
+                break;
+            }
+        }
+        // $this->SendDebug(__FUNCTION__, 'log=' . $log . ', newLogV='. print_r($newLogV, true), 0);
+        $this->SetBuffer('moduleActivity', json_encode($newLogV));
+    }
+
+    private function GetModuleActivityFormAction()
+    {
+        $logV = $this->ReadModuleActivity();
+
+        $formAction = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Module activity',
+            'items'   => [
+                [
+                    'type'     => 'List',
+                    'name'     => 'ModuleActivity',
+                    'columns'  => [
+                        [
+                            'name'     => 'tstamp',
+                            'width'    => '160px',
+                            'caption'  => 'Timestamp',
+                        ],
+                        [
+                            'name'     => 'log',
+                            'width'    => 'auto',
+                            'caption'  => 'Activity',
+                        ],
+                    ],
+                    'add'      => false,
+                    'delete'   => false,
+                    'rowCount' => count($logV) > 0 ? count($logV) : 1,
+                    'values'   => $logV,
+                    'caption'  => '',
+                ],
+
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Refresh panel',
+                    'onClick' => 'IPS_RequestAction($id, "UpdateFormData", json_encode(["area" => "ModuleActivity"]));',
+                ],
+            ],
+            'onClick' => 'IPS_RequestAction($id, "UpdateFormData", json_encode(["area" => "ModuleActivity"]));',
+        ];
+        return $formAction;
     }
 }
