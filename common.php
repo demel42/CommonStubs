@@ -1586,8 +1586,12 @@ trait StubsCommonLib
             }
             $s .= ', interval=' . $duration;
 
-            if ($timer['NextRun']) {
-                $s .= ', next=' . date('H:i:s', $timer['NextRun']);
+            $ts = $timer['NextRun'];
+            if ($ts) {
+                if ($timer['Running']) {
+                    $ts = time() + ($timer['Interval'] / 1000);
+                }
+                $s .= ', next=' . date('H:i:s', $ts);
             }
             return $s;
         }
