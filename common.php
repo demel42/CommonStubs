@@ -588,6 +588,12 @@ trait StubsCommonLib
         return $s;
     }
 
+    private function GetSystemLocation()
+    {
+        $id = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}')[0];
+        return json_decode(IPS_GetProperty($id, 'Location'), true);
+    }
+
     private function GetConfiguratorLocation(int $catID)
     {
         $tree_position = [];
@@ -1602,6 +1608,14 @@ trait StubsCommonLib
     {
         $this->SetTimerInterval($name, $msec);
         $this->SendDebug(__FUNCTION__, $this->PrintTimer($name), 0);
+    }
+
+    private function MaintainStatus(int $status)
+    {
+        if ($this->GetStatus() != $status) {
+            $this->SetStatus($status);
+            $this->SendDebug(__FUNCTION__, 'change status to ' . $this->GetStatus() . '(' . $this->GetStatusText() . ')', 0);
+        }
     }
 
     private function version2num($version)
