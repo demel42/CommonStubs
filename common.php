@@ -280,7 +280,7 @@ trait StubsCommonLib
             $found = false;
             foreach ($clientIDs as $index => $clientID) {
                 if ($clientID['ClientID'] == $ident) {
-                    if ($clientID['TargetID'] == $this->InstanceID) {
+                    if ($clientID['TargetID'] != $this->InstanceID) {
                         $this->SendDebug(__FUNCTION__, 'already exists with foreign TargetID ' . $clientID['TargetID'] . ', overwrite with ' . $this->InstanceID, 0);
                         $clientID['TargetID'] = $this->InstanceID;
                     } else {
