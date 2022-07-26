@@ -1572,18 +1572,23 @@ trait StubsCommonLib
         return $s;
     }
 
-    private function PrintTimer(string $name)
+    private function GetTimerByName(string $name)
     {
         $timerList = IPS_GetTimerList();
         foreach ($timerList as $t) {
             $timer = IPS_GetTimer($t);
-            if ($timer['InstanceID'] != $this->InstanceID) {
-                continue;
+            if ($timer['InstanceID'] == $this->InstanceID && $timer['Name'] == $name) {
+                return $timer;
             }
-            if ($timer['Name'] != $name) {
-                continue;
-            }
+        }
+        return false;
+    }
 
+    private function PrintTimer(string $name)
+    {
+        $s = '';
+        $timer = $this->GetTimerByName($name);
+        if ($timer != false) {
             $s = 'timer=' . $timer['Name'] . '(' . $timer['TimerID'] . ')';
 
             $duration = $this->seconds2duration($timer['Interval'] / 1000);
@@ -1599,9 +1604,8 @@ trait StubsCommonLib
                 }
                 $s .= ', next=' . date('H:i:s', $ts);
             }
-            return $s;
         }
-        return false;
+        return $s;
     }
 
     private function MaintainTimer(string $name, int $msec)

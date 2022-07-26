@@ -59,6 +59,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string TranslateFormat(string $text, array $vars = null)`<br>
 <br>
 
+`array GetTimerByName(string $name)`<br>
 `string PrintTimer(string $name)`<br>
 `string MaintainTimer(string $name, int $msec)`<br>
 <br>
