@@ -1656,8 +1656,10 @@ trait StubsCommonLib
         @$updateInfo = $this->ReadAttributeString('UpdateInfo');
         $oldInfo = json_decode($updateInfo != false ? $updateInfo : '', true);
         if ($oldInfo == false) {
-            $oldInfo = [];
+            $this->SendDebug(__FUNCTION__, 'no old version saved', 0);
+            return false;
         }
+
         $oldVersion = $this->version2str($oldInfo);
 
         $newInfo = [
@@ -1670,7 +1672,6 @@ trait StubsCommonLib
         $m = 'old=' . $oldVersion . ', new=' . $newVersion;
 
         $eq = $oldVersion == $newVersion;
-
         if ($eq == true) {
             $this->SendDebug(__FUNCTION__, 'equal version (' . $m . ')', 0);
             return false;
