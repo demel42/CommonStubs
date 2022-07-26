@@ -1994,4 +1994,20 @@ trait StubsCommonLib
         ];
         return $formAction;
     }
+
+    private function SetVariableLogging(string $ident, int $aggregationTyp)
+    {
+        @$varID = $this->GetIDForIdent($ident);
+        if ($varID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
+            return false;
+        }
+        $archivID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+        if ($aggregationTyp) {
+            AC_SetLoggingStatus($archivID, $varID, true);
+            AC_SetAggregationType($archivID, $varID, $aggregationTyp);
+        } else {
+            AC_SetLoggingStatus($archivID, $varID, false);
+        }
+    }
 }
