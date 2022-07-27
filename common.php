@@ -61,7 +61,7 @@ trait StubsCommonLib
         return $ret;
     }
 
-    private function CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)
+    private function CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, float $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)
     {
         if ($doReinstall && IPS_VariableProfileExists($ident)) {
             IPS_DeleteVariableProfile($ident);

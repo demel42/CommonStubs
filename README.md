@@ -8,7 +8,7 @@
 `mixed GetValueFormatted(string $ident)`<br>
 <br>
 
-`void CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, int $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)`<br>
+`void CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, float $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall)`<br>
 `string CheckVarProfile4Value(string $ident, mixed $value)`<br>
 <br>
 
