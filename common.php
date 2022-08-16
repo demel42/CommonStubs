@@ -597,7 +597,7 @@ trait StubsCommonLib
     private function GetConfiguratorLocation(int $catID)
     {
         $tree_position = [];
-        if (IPS_CategoryExists($catID)) {
+        if ($catID > 0 && IPS_CategoryExists($catID)) {
             $tree_position[] = IPS_GetName($catID);
             $parID = IPS_GetObject($catID)['ParentID'];
             while ($parID > 0) {
