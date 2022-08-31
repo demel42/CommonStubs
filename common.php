@@ -895,6 +895,42 @@ trait StubsCommonLib
         }
     }
 
+    private function MaintainReferences4Script($text)
+    {
+        if ($text == '') {
+            return;
+        }
+        $lines = explode(PHP_EOL, $text);
+        foreach ($lines as $line) {
+            $patternV = [
+                '/[^!=><]=[\t ]*([0-9]{5})[^0-9]/',
+                '/[\t ]*=[\t ]*([0-9]{5})[^0-9]/',
+                '/\([\t ]*([0-9]{5})[^0-9]/',
+            ];
+            foreach ($patternV as $pattern) {
+                if (preg_match_all($pattern, $line, $r)) {
+                    foreach ($r[1] as $id) {
+                        if ($this->IsValidID($id)) {
+                            $this->RegisterReference($id);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function UnregisterMessages(array $messagesIds)
+    {
+        $messageList = $this->GetMessageList();
+        foreach ($messageList as $oid => $mids) {
+            foreach ($mids as $mid) {
+                if (in_array($mid, $messagesIds)) {
+                    $this->UnregisterMessage($oid, $mid);
+                }
+            }
+        }
+    }
+
     private function ExplodeReferences($instID)
     {
         $inst = IPS_GetInstance($instID);

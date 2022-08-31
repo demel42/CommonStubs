@@ -89,7 +89,11 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string GetModulePrefix()`<br>
 
 `bool IsValidID(int $id)`<br>
+
 `void MaintainReferences(array $propertyNames)`<br>
+`void MaintainReferences4Script(string $text)`<br>
+
+`void UnregisterMessages(array $messagesIds)`<br>
 
 `array ExplodeReferences(int $instID)`<br>
 `array GetReferencesFormAction()`<br>
