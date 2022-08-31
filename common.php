@@ -2031,7 +2031,7 @@ trait StubsCommonLib
         return $formAction;
     }
 
-    private function SetVariableLogging(string $ident, int $aggregationTyp)
+    private function SetVariableLogging(string $ident, int $aggregationType)
     {
         @$varID = $this->GetIDForIdent($ident);
         if ($varID == false) {
@@ -2039,11 +2039,23 @@ trait StubsCommonLib
             return false;
         }
         $archivID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-        if ($aggregationTyp) {
-            AC_SetLoggingStatus($archivID, $varID, true);
-            AC_SetAggregationType($archivID, $varID, $aggregationTyp);
-        } else {
-            AC_SetLoggingStatus($archivID, $varID, false);
+
+        $reAggregate = AC_GetLoggingStatus($archivID, $source_varID) == false || AC_GetAggregationType($archivID, $source_varID) != $aggregationType;
+        AC_SetLoggingStatus($archivID, $varID, true);
+        AC_SetAggregationType($archivID, $varID, $aggregationType);
+        if ($reAggregate) {
+            AC_ReAggregateVariable(archivID, $varID);
         }
+    }
+
+    private function UnsetVariableLogging(string $ident)
+    {
+        @$varID = $this->GetIDForIdent($ident);
+        if ($varID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
+            return false;
+        }
+        $archivID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+        AC_SetLoggingStatus($archivID, $varID, false);
     }
 }

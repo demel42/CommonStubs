@@ -120,7 +120,8 @@ dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, arra
 `void AddModuleActivity(string $log, int $maxLen = 20)`<br>
 `array GetModuleActivityFormAction()`<br>
 
-`void SetVariableLogging(string $ident, int $aggregationTyp)`<br>
+`void SetVariableLogging(string $ident, int $aggregationType)`<br>
+`void UnsetVariableLogging(string $ident)`<br>
 
 
 Definierte Konstanten
