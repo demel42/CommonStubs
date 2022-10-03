@@ -922,10 +922,38 @@ trait StubsCommonLib
     private function UnregisterMessages(array $messagesIds)
     {
         $messageList = $this->GetMessageList();
-        foreach ($messageList as $oid => $mids) {
-            foreach ($mids as $mid) {
-                if (in_array($mid, $messagesIds)) {
-                    $this->UnregisterMessage($oid, $mid);
+        foreach ($messageList as $objId => $msgIds) {
+            foreach ($msgIds as $msgId) {
+                if (in_array($msgId, $messagesIds)) {
+                    $this->UnregisterMessage($objId, $msgId);
+                }
+            }
+        }
+    }
+
+    private function RegisterObjectMessages(array $objIDs, array $messagesIds)
+    {
+        $messageBases = [
+            OBJECTTYPE_INSTANCE => IPS_INSTANCEMESSAGE,
+            OBJECTTYPE_VARIABLE => IPS_VARIABLEMESSAGE,
+            OBJECTTYPE_SCRIPT   => IPS_SCRIPTMESSAGE,
+            OBJECTTYPE_EVENT    => IPS_EVENTMESSAGE,
+            OBJECTTYPE_MEDIA    => IPS_MEDIAMESSAGE,
+            OBJECTTYPE_LINK     => IPS_LINKMESSAGE,
+        ];
+
+        foreach ($objIDs as $objID) {
+            if (IPS_ObjectExists($objID)) {
+                $obj = IPS_GetObject($objID);
+                $objType = $obj['ObjectType'];
+
+                if (isset($messageBases[$objType])) {
+                    $messageBase = $messageBases[$objType];
+                    foreach ($messagesIds as $messageId) {
+                        if ($messageId > $messageBase && $messageId < ($messageBase + 100)) {
+                            $this->RegisterMessage($objID, $messageId);
+                        }
+                    }
                 }
             }
         }
