@@ -1724,10 +1724,16 @@ trait StubsCommonLib
         @$updateInfo = $this->ReadAttributeString('UpdateInfo');
         $oldInfo = json_decode($updateInfo != false ? $updateInfo : '', true);
         if ($oldInfo == false) {
-            $this->SendDebug(__FUNCTION__, 'no old version saved', 0);
+            $this->SendDebug(__FUNCTION__, 'no old version saved, force current', 0);
+            $oldInfo = [
+                'Version' => $lib['Version'],
+                'Build'   => $lib['Build'],
+                'Date'    => $lib['Date'],
+                'tstamp'  => time(),
+            ];
+            $this->WriteAttributeString('UpdateInfo', json_encode($oldInfo));
             return false;
         }
-
         $oldVersion = $this->version2str($oldInfo);
 
         $newInfo = [
