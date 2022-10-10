@@ -919,6 +919,25 @@ trait StubsCommonLib
         }
     }
 
+    private function MaintainReferences4Action($action)
+    {
+        if (is_array($action) == false) {
+            @$action = json_decode($action, true);
+        }
+        if (is_array($action)) {
+            if (isset($action['parameters']['TARGET'])) {
+                $objID = $action['parameters']['TARGET'];
+                if ($this->IsValidID($objID)) {
+                    $this->RegisterReference($objID);
+                }
+            }
+            if (isset($action['parameters']['SCRIPT'])) {
+                $text = $action['parameters']['SCRIPT'];
+                $this->MaintainReferences4Script($text);
+            }
+        }
+    }
+
     private function UnregisterMessages(array $messagesIds)
     {
         $messageList = $this->GetMessageList();
@@ -1674,6 +1693,10 @@ trait StubsCommonLib
 
     private function MaintainTimer(string $name, int $msec)
     {
+        if ($msec < 0) {
+            $this->SendDebug(__FUNCTION__, 'timer ' . $name . ' is to be set ' . $msec . 'ms - this is not permitted', 0);
+            $msec = 0;
+        }
         $this->SetTimerInterval($name, $msec);
         $this->SendDebug(__FUNCTION__, $this->PrintTimer($name), 0);
     }

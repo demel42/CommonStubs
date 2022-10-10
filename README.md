@@ -92,6 +92,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 
 `void MaintainReferences(array $propertyNames)`<br>
 `void MaintainReferences4Script(string $text)`<br>
+`void MaintainReferences4Action(mixed $action)`<br>
 
 `void UnregisterMessages(array $messagesIds)`<br>
 `void RegisterObjectMessages(array $objIDs, array $messagesIds)`<br>
