@@ -2096,12 +2096,11 @@ trait StubsCommonLib
             return false;
         }
         $archivID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-
-        $reAggregate = AC_GetLoggingStatus($archivID, $source_varID) == false || AC_GetAggregationType($archivID, $source_varID) != $aggregationType;
+        $reAggregate = AC_GetLoggingStatus($archivID, $varID) == false || AC_GetAggregationType($archivID, $varID) != $aggregationType;
         AC_SetLoggingStatus($archivID, $varID, true);
         AC_SetAggregationType($archivID, $varID, $aggregationType);
         if ($reAggregate) {
-            AC_ReAggregateVariable(archivID, $varID);
+            AC_ReAggregateVariable($archivID, $varID);
         }
     }
 
