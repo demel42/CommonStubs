@@ -1598,7 +1598,7 @@ trait StubsCommonLib
             array_push($chain, $this->InstanceID);
         }
         $_IPS['chain'] = $chain;
-        // $this->SendDebug(__FUNCTION__, 'func=' . $func . ', environment=' . print_r($_IPS, true), 0);
+        // $this->SendDebug(__FUNCTION__, 'func=' . $func . ', _IPS=' . print_r($_IPS, true), 0);
     }
 
     private function PopCallChain(string $func)
@@ -1615,12 +1615,20 @@ trait StubsCommonLib
             array_pop($chain);
         }
         $_IPS['chain'] = $chain;
-        // $this->SendDebug(__FUNCTION__, 'func=' . $func . ', environment=' . print_r($_IPS, true), 0);
+        // $this->SendDebug(__FUNCTION__, 'func=' . $func . ', _IPS=' . print_r($_IPS, true), 0);
     }
 
     private function PrintCallChain(bool $complete)
     {
         $cause = isset($_IPS['ENVIRONMENT']) ? $_IPS['ENVIRONMENT'] : $_IPS['SENDER'];
+        if (in_array($cause, ['PHPModule', 'RunScript'])) {
+            $stack = isset($_IPS['stack']) ? $_IPS['stack'] : [];
+            $c = count($stack);
+            if ($c > 0) {
+                $cause = $stack[$c - 1]['func'];
+            }
+        }
+
         $chain = isset($_IPS['chain']) ? $_IPS['chain'] : [];
         if ($complete == false && end($chain) == $this->InstanceID) {
             array_pop($chain);
