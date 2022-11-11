@@ -545,6 +545,37 @@ trait StubsCommonLib
         return $translations;
     }
 
+    private function GetTranslationInfo()
+    {
+        if (IPS_GetKernelVersion() >= 6.1) {
+            $lang = IPS_GetSystemLanguage();
+        } else {
+            $lang = isset($_ENV['LANG']) ? $_ENV['LANG'] : '';
+            if (preg_match('/([^\.]*)\..*/', $lang, $r)) {
+                $lang = $r[1];
+            }
+        }
+        $code = explode('_', $lang)[0];
+
+        $translations = $this->GetTranslations();
+        if ($translations != false) {
+            $s = 'missing';
+            if (isset($translations[$lang])) {
+                $s = $lang;
+            } else {
+                if (isset($translations[$code])) {
+                    $s = $code;
+                } elseif ($code == 'en') {
+                    $s = 'not required';
+                }
+            }
+        } else {
+            $s = 'corrupt';
+        }
+        return $s . ' (lang=' . $lang . ')';
+        return $s;
+    }
+
     public function Translate($text)
     {
         if ($text == '') {
@@ -569,6 +600,8 @@ trait StubsCommonLib
                 $code = explode('_', $lang)[0];
                 if (isset($translations[$code][$text])) {
                     $text = $translations[$code][$text];
+                    $b = true;
+                } elseif ($code == 'en') {
                     $b = true;
                 }
             }
@@ -770,7 +803,7 @@ trait StubsCommonLib
             $s .= 'Updated: ' . $u . PHP_EOL;
         }
 
-        $this->SendDebug(__FUNCTION__, implode(', ', $m), 0);
+        $this->SendDebug(__FUNCTION__, implode(', ', $m) . ', translation=' . $this->GetTranslationInfo(), 0);
         return $s;
     }
 

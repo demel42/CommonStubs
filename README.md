@@ -55,6 +55,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 <br>
 
 `array GetTranslations()`<br>
+`string GetTranslationInfo()`<br>
 `string Translate(string $text)`<br>
 `string TranslateFormat(string $text, array $vars = null)`<br>
 <br>
