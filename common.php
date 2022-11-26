@@ -2365,8 +2365,8 @@ trait StubsCommonLib
         if ($notes != '') {
             $msg .= PHP_EOL;
             $msg .= 'additional informations:' . PHP_EOL;
-			$msg .= $notes . PHP_EOL;
-		}
+            $msg .= $notes . PHP_EOL;
+        }
 
         $this->RequestAction('PopupMessage', $msg);
     }
