@@ -1353,6 +1353,10 @@ trait StubsCommonLib
                 $this->InstallVarProfiles(true);
                 $r = true;
                 break;
+            case 'ShowApiCallStats':
+                $this->ShowApiCallStats();
+                $r = true;
+                break;
             case 'PopupMessage':
                 $this->PopupMessage($params);
                 $r = true;
@@ -2154,5 +2158,216 @@ trait StubsCommonLib
         }
         $archivID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
         AC_SetLoggingStatus($archivID, $varID, false);
+    }
+
+    private function ApiCallsSetInfo(array $limits, string $notes)
+    {
+        $stats = json_decode($this->ReadAttributeString('ApiCallStats'), true);
+        if ($stats == false) {
+            $stats = [
+                'tstamps' => [],
+                'entries' => [],
+            ];
+        }
+        $stats['limits'] = $limits;
+        $stats['notes'] = $notes;
+        $this->WriteAttributeString('ApiCallStats', json_encode($stats));
+    }
+
+    private function ApiCallsCollect(string $url, string $err, int $statuscode)
+    {
+        if (preg_match('!(^[^:]*://([^@]*@|)([^?]*|.*)|([^@]*@|)([^?]*|.*))!', $url, $r) && count($r)) {
+            $uri = $r[count($r) - 1];
+        } else {
+            $uri = '';
+        }
+
+        $callerID = isset($_IPS['CallerID']) ? $_IPS['CallerID'] : $this->InstanceID;
+        $this->SendDebug(__FUNCTION__, 'caller=' . $callerID . '(' . IPS_GetName($callerID) . '), uri=' . $uri . ', err=' . $err . ', statuscode=' . $statuscode, 0);
+
+        $now = time();
+        $stats = json_decode($this->ReadAttributeString('ApiCallStats'), true);
+        if ($stats == false) {
+            $stats = [];
+        }
+
+        $month_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.month', 0);
+        $day_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.day', 0);
+        $hour_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.hour', 0);
+
+        $total_ref_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.total', time());
+        $month_ref_tstamp = strtotime(date('01.m.Y 00:00:00', $now));
+        $day_ref_tstamp = strtotime(date('d.m.Y 00:00:00', $now));
+        $hour_ref_tstamp = strtotime(date('d.m.Y H:00:00', $now));
+
+        $stats_new = [
+            'tstamps' => [
+                'total' => $total_ref_tstamp,
+                'month' => $month_ref_tstamp,
+                'day'   => $day_ref_tstamp,
+                'hour'  => $hour_ref_tstamp,
+            ],
+            'entries' => [],
+            'limits'  => (array) $this->GetArrayElem($stats, 'limits', []),
+        ];
+
+        $entries = (array) $this->GetArrayElem($stats, 'entries', []);
+        $entries_new = [];
+
+        $b = false;
+        foreach ($entries as $entry) {
+            if ($month_ref_tstamp != $month_tstamp) {
+                $entry['last_month'] = (int) $this->GetArrayElem($entry, 'month', 0);
+                $entry['month'] = 0;
+            }
+            if ($day_ref_tstamp != $day_tstamp) {
+                $entry['last_day'] = (int) $this->GetArrayElem($entry, 'day', 0);
+                $entry['day'] = 0;
+            }
+            if ($hour_ref_tstamp != $hour_tstamp) {
+                $entry['last_hour'] = (int) $this->GetArrayElem($entry, 'hour', 0);
+                $entry['hour'] = 0;
+            }
+            if ($entry['uri'] == $uri && $entry['err'] == $err && $entry['callerID'] == $callerID) {
+                $entry['total'] = $entry['total'] + 1;
+                $entry['month'] = $entry['month'] + 1;
+                $entry['day'] = $entry['day'] + 1;
+                $entry['hour'] = $entry['hour'] + 1;
+                $b = true;
+            }
+            $entries_new[] = $entry;
+        }
+
+        if ($b == false) {
+            $entry = [
+                'callerID'   => $callerID,
+                'uri'        => $uri,
+                'err'        => $err,
+                'total'      => 1,
+                'month'      => 1,
+                'day'        => 1,
+                'hour'       => 1,
+                'last_month' => 0,
+                'last_day'   => 0,
+                'last_hour'  => 0,
+            ];
+            $entries_new[] = $entry;
+        }
+
+        $stats_new['entries'] = $entries_new;
+
+        $this->SendDebug(__FUNCTION__, 'ApiCalls=' . print_r($stats_new, true), 0);
+
+        $this->WriteAttributeString('ApiCallStats', json_encode($stats_new));
+    }
+
+    private function GetApiCallStatsFormItem()
+    {
+        $item = [
+            'type'    => 'Button',
+            'caption' => 'Show API call statistics',
+            'onClick' => 'IPS_RequestAction($id, "ShowApiCallStats", "");'
+        ];
+        return $item;
+    }
+
+    private function ShowApiCallStats()
+    {
+        $stats = json_decode($this->ReadAttributeString('ApiCallStats'), true);
+        if ($stats == false) {
+            $msg = 'no collected data';
+            $this->RequestAction('PopupMessage', $msg);
+            return;
+        }
+
+        $entries = $stats['entries'];
+
+        $callerIDs = [0];
+        foreach ($entries as $entry) {
+            if (array_search($entry['callerID'], $callerIDs) == false) {
+                $callerIDs[] = $entry['callerID'];
+            }
+        }
+
+        $msg = 'Statistics of API calls';
+        if (isset($stats['tstamps']['total'])) {
+            $msg .= ' (since ' . date('d.m.y H:i:s', $stats['tstamps']['total']) . ')';
+        }
+        $msg .= PHP_EOL;
+        $msg .= PHP_EOL;
+
+        foreach ($callerIDs as $callerID) {
+            if ($callerID) {
+                $msg .= $callerID . '(' . IPS_GetName($callerID) . ')' . PHP_EOL;
+            } else {
+                $msg .= 'all instances' . PHP_EOL;
+            }
+
+            $total_ok = $total_err = 0;
+            $month_ok = $month_err = $last_month_ok = $last_month_err = 0;
+            $day_ok = $day_err = $last_day_ok = $last_day_err = 0;
+            $hour_ok = $hour_err = $last_hour_ok = $last_hour_err = 0;
+
+            foreach ($entries as $entry) {
+                if ($callerID && $entry['callerID'] != $callerID) {
+                    continue;
+                }
+                if ($entry['err'] == '') {
+                    $total_ok += $entry['total'];
+                    $month_ok += $entry['month'];
+                    $day_ok += $entry['day'];
+                    $hour_ok += $entry['hour'];
+                    $last_month_ok += $entry['last_month'];
+                    $last_day_ok += $entry['last_day'];
+                    $last_hour_ok += $entry['last_hour'];
+                } else {
+                    $total_err += $entry['total'];
+                    $month_err += $entry['month'];
+                    $day_err += $entry['day'];
+                    $hour_err += $entry['hour'];
+                    $last_month_err += $entry['last_month'];
+                    $last_day_err += $entry['last_day'];
+                    $last_hour_err += $entry['last_hour'];
+                }
+            }
+
+            $msg .= '- total......... ok=' . $total_ok . '/err=' . $total_err . PHP_EOL;
+
+            $m = [];
+            $m[] = 'month: ok=' . $month_ok . '/err=' . $month_err;
+            $m[] = 'day: ok=' . $day_ok . '/err=' . $day_err;
+            $m[] = 'hour: ok=' . $hour_ok . '/err=' . $hour_err;
+            $msg .= '- current..... ' . implode('; ', $m) . PHP_EOL;
+
+            $m = [];
+            $m[] = 'month: ok=' . $last_month_ok . '/err=' . $last_month_err;
+            $m[] = 'day: ok=' . $last_day_ok . '/err=' . $last_day_err;
+            $m[] = 'hour: ok=' . $last_hour_ok . '/err=' . $last_hour_err;
+            $msg .= '- previous... ' . implode('; ', $m) . PHP_EOL;
+
+            $msg .= PHP_EOL;
+        }
+
+        $limits = (array) $this->GetArrayElem($stats, 'limits', []);
+        if ($limits != []) {
+            $msg .= PHP_EOL;
+            $msg .= 'known limitations:' . PHP_EOL;
+            foreach ($limits as $limit) {
+                $value = $this->GetArrayElem($limit, 'value', 0);
+                $unit = $this->GetArrayElem($limit, 'unit', '');
+                if ($value > 0) {
+                    $msg .= '- ' . $value . ' per ' . $unit . PHP_EOL;
+                }
+            }
+        }
+
+        $notes = $this->GetArrayElem($stats, 'notes', '');
+        if ($notes != '') {
+            $msg .= PHP_EOL;
+            $msg .= 'additional informations:' . PHP_EOL;
+			$msg .= $notes . PHP_EOL;
+		}
+
+        $this->RequestAction('PopupMessage', $msg);
     }
 }

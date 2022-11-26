@@ -126,6 +126,11 @@ dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, arra
 `void SetVariableLogging(string $ident, int $aggregationType)`<br>
 `void UnsetVariableLogging(string $ident)`<br>
 
+`void ApiCallsSetLimits(array $limits)`<br>
+`void ApiCallsCollect(string $url, string $err, int $statuscode)`<br>
+`array GetApiCallStatsFormItem()`<br>
+`void ShowApiCallStats()`<br>
+
 
 Definierte Konstanten
 ```

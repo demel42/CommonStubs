@@ -71,6 +71,9 @@
 			"Activity": "Aktivität",
 			"Refresh panel": "Panel aktualisieren",
 
+			"__actions__": "ShowApiCallStats",
+			"Show API call statistics": "API-Aufrufstatistik anzeigen",
+
 			"__status__": "Status",
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",
