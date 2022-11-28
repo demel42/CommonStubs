@@ -2271,6 +2271,33 @@ trait StubsCommonLib
         return $item;
     }
 
+    private function cmp_caller($a, $b)
+    {
+        if (IPS_InstanceExists($a) == false) {
+            return ($a < $b) ? -1 : 1;
+        }
+        $inst_a = IPS_GetInstance($a);
+
+        if (IPS_InstanceExists($b) == false) {
+            return ($a < $b) ? -1 : 1;
+        }
+        $inst_b = IPS_GetInstance($b);
+
+        $mod_a = IPS_GetModule($inst_a['ModuleInfo']['ModuleID']);
+        $mod_b = IPS_GetModule($inst_b['ModuleInfo']['ModuleID']);
+        if ($mod_a['ModuleType'] != $mod_b['ModuleType']) {
+            return ($mod_a['ModuleType'] < $mod_b['ModuleType']) ? -1 : 1;
+        }
+
+        $name_a = IPS_ObjectExists($a) ? IPS_GetName($a) : $this->Translate('Unknown object #') . $a;
+        $name_b = IPS_ObjectExists($b) ? IPS_GetName($b) : $this->Translate('Unknown object #') . $b;
+        if ($name_a != $name_b) {
+            return (strcmp($name_a, $name_b) < 0) ? -1 : 1;
+        }
+
+        return ($a < $b) ? -1 : 1;
+    }
+
     private function ShowApiCallStats()
     {
         $stats = json_decode($this->ReadAttributeString('ApiCallStats'), true);
@@ -2289,18 +2316,23 @@ trait StubsCommonLib
             }
         }
 
-        $msg = 'Statistics of API calls';
+        $msg = $this->Translate('Statistics of API calls');
         if (isset($stats['tstamps']['total'])) {
-            $msg .= ' (since ' . date('d.m.y H:i:s', $stats['tstamps']['total']) . ')';
+            $msg .= ' (' . $this->Translate('since') . ' ' . date('d.m.y H:i:s', $stats['tstamps']['total']) . ')';
         }
         $msg .= PHP_EOL;
         $msg .= PHP_EOL;
 
+        usort($callerIDs, [__CLASS__, 'cmp_caller']);
         foreach ($callerIDs as $callerID) {
             if ($callerID) {
-                $msg .= $callerID . '(' . IPS_GetName($callerID) . ')' . PHP_EOL;
+                if (IPS_ObjectExists($callerID)) {
+                    $msg .= $callerID . '(' . IPS_GetName($callerID) . ')' . PHP_EOL;
+                } else {
+                    $msg .= $this->Translate('Unknown object #') . $callerID . PHP_EOL;
+                }
             } else {
-                $msg .= 'all instances' . PHP_EOL;
+                $msg .= $this->Translate('all instances') . PHP_EOL;
             }
 
             $total_ok = $total_err = 0;
@@ -2331,19 +2363,19 @@ trait StubsCommonLib
                 }
             }
 
-            $msg .= '- total......... ok=' . $total_ok . '/err=' . $total_err . PHP_EOL;
+            $msg .= '- ' . $this->Translate('total.........') . ' ' . $total_ok . '/' . $total_err . PHP_EOL;
 
             $m = [];
-            $m[] = 'month: ok=' . $month_ok . '/err=' . $month_err;
-            $m[] = 'day: ok=' . $day_ok . '/err=' . $day_err;
-            $m[] = 'hour: ok=' . $hour_ok . '/err=' . $hour_err;
-            $msg .= '- current..... ' . implode('; ', $m) . PHP_EOL;
+            $m[] = $this->Translate('month') . '=' . $month_ok . '/' . $month_err;
+            $m[] = $this->Translate('day') . '=' . $day_ok . '/' . $day_err;
+            $m[] = $this->Translate('hour') . '=' . $hour_ok . '/' . $hour_err;
+            $msg .= '- ' . $this->Translate('current.....') . ' ' . implode(', ', $m) . PHP_EOL;
 
             $m = [];
-            $m[] = 'month: ok=' . $last_month_ok . '/err=' . $last_month_err;
-            $m[] = 'day: ok=' . $last_day_ok . '/err=' . $last_day_err;
-            $m[] = 'hour: ok=' . $last_hour_ok . '/err=' . $last_hour_err;
-            $msg .= '- previous... ' . implode('; ', $m) . PHP_EOL;
+            $m[] = $this->Translate('month') . '=' . $last_month_ok . '/' . $last_month_err;
+            $m[] = $this->Translate('day') . '=' . $last_day_ok . '/' . $last_day_err;
+            $m[] = $this->Translate('hour') . '=' . $last_hour_ok . '/' . $last_hour_err;
+            $msg .= '- ' . $this->Translate('previous...') . ' ' . implode(', ', $m) . PHP_EOL;
 
             $msg .= PHP_EOL;
         }
@@ -2351,12 +2383,12 @@ trait StubsCommonLib
         $limits = (array) $this->GetArrayElem($stats, 'limits', []);
         if ($limits != []) {
             $msg .= PHP_EOL;
-            $msg .= 'known limitations:' . PHP_EOL;
+            $msg .= $this->Translate('known limitations') . ':' . PHP_EOL;
             foreach ($limits as $limit) {
                 $value = $this->GetArrayElem($limit, 'value', 0);
                 $unit = $this->GetArrayElem($limit, 'unit', '');
                 if ($value > 0) {
-                    $msg .= '- ' . $value . ' per ' . $unit . PHP_EOL;
+                    $msg .= '- ' . $value . ' ' . $this->Translate('per') . ' ' . $this->Translate($unit) . PHP_EOL;
                 }
             }
         }
@@ -2364,7 +2396,7 @@ trait StubsCommonLib
         $notes = $this->GetArrayElem($stats, 'notes', '');
         if ($notes != '') {
             $msg .= PHP_EOL;
-            $msg .= 'additional informations:' . PHP_EOL;
+            $msg .= $this->Translate('additional informations') . ':' . PHP_EOL;
             $msg .= $notes . PHP_EOL;
         }
 
