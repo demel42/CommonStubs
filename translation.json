@@ -91,6 +91,10 @@
 			"minute": "Minute",
 			"second": "Sekunde",
 
+			"__actions__": "",
+			"Refresh data cache": "Datencache aktualisieren",
+			"(last updated: ${tstamp})": "(zuletzt aktualisiert: ${tstamp})",
+
 			"__status__": "Status",
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

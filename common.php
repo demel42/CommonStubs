@@ -1357,6 +1357,10 @@ trait StubsCommonLib
                 $this->ShowApiCallStats();
                 $r = true;
                 break;
+            case 'RefreshDataCache':
+                $this->RefreshDataCache();
+                $r = true;
+                break;
             case 'PopupMessage':
                 $this->PopupMessage($params);
                 $r = true;
@@ -2401,5 +2405,39 @@ trait StubsCommonLib
         }
 
         $this->RequestAction('PopupMessage', $msg);
+    }
+
+    private function RefreshDataCache()
+    {
+        $this->WriteAttributeString('DataCache', '');
+        $this->ReloadForm();
+    }
+
+    private function GetRefreshDataCacheFormAction()
+    {
+        $cache = json_decode($this->ReadAttributeString('DataCache'), true);
+        if (isset($cache['tstamp']) && $cache['tstamp'] > 0) {
+            $t = date('d.m.y H:i:s', $cache['tstamp']);
+        } else {
+            $t = '-';
+        }
+        $s = $this->TranslateFormat('(last updated: ${tstamp})', ['${tstamp}' => $t]);
+
+        $formAction = [
+            'type'    => 'RowLayout',
+            'items'   => [
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Refresh data cache',
+                    'onClick' => 'IPS_RequestAction($id, "RefreshDataCache", "");'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => $s,
+                ],
+            ],
+        ];
+
+        return $formAction;
     }
 }
