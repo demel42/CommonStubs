@@ -14,7 +14,8 @@
 			"unknwon": "unbekannt",
 			"The use of possible affected status variables can be checked in the expansion panel \"References\"":
 				"Die Verwendung möglicherweise betroffener Statusvariablen kann im Erweiterungspanel \"Referenzen\" überprüft werden",
-			"Press button 'Complete update' to carry out the required work": "Taste 'Update abschliessen' betätigen um die erforderlichen Arbeiten auszuführen",
+			"Press button 'Complete update' to carry out the required work":
+				"Taste 'Update abschliessen' betätigen um die erforderlichen Arbeiten auszuführen",
 			"Complete update": "Update abschliessen",
 			"Unable to complete the update": "Das Update kann nicht abgeschlossen werden",
 			"please contact the author": "Bitte kontaktieren Sie den Autor",
@@ -72,11 +73,12 @@
 			"Refresh panel": "Panel aktualisieren",
 
 			"__actions__": "ShowApiCallStats",
-			"Unknown object #": "Unbekanntes Objekt #",
 			"Show API call statistics": "API-Aufrufstatistik anzeigen",
+			"no collected data": "keine gesammelten Daten",
 			"Statistics of API calls": "Statistik der API-Aufrufe",
 			"since": "seit",
 			"all instances": "alle Instanzen",
+			"Unknown object #": "Unbekanntes Objekt #",
 			"total.........": "gesamt...",
 			"current.....": "aktuell.....",
 			"previous...": "zuvor.......",
@@ -91,9 +93,10 @@
 			"minute": "Minute",
 			"second": "Sekunde",
 
-			"__actions__": "",
+			"__actions__": "GetRefreshDataCacheFormAction",
+			"To avoid API limitations, data in the configurator is only requested every ${expires_in}; intermediate requests are served from the data cache (last updated: ${tstamp}).":
+				"Um API-Limitierungen zu vermeiden, werden im Konfigurator Daten nur alle ${expires_in} abgefragt; zwischenzeitliche Abfragen werden aus dem Daten-Cache bedient (zuletzt aktualisiert: ${tstamp}).",
 			"Refresh data cache": "Datencache aktualisieren",
-			"(last updated: ${tstamp})": "(zuletzt aktualisiert: ${tstamp})",
 
 			"__status__": "Status",
 			"Instance getting created": "Instanz wird erstellt",

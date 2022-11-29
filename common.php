@@ -2166,7 +2166,11 @@ trait StubsCommonLib
 
     private function ApiCallsSetInfo(array $limits, string $notes)
     {
-        $stats = json_decode($this->ReadAttributeString('ApiCallStats'), true);
+        @$stats = $this->ReadAttributeString('ApiCallStats');
+        if ($stats == false) {
+            return;
+        }
+        @$stats = json_decode($stats, true);
         if ($stats == false) {
             $stats = [
                 'tstamps' => [],
@@ -2190,7 +2194,13 @@ trait StubsCommonLib
         $this->SendDebug(__FUNCTION__, 'caller=' . $callerID . '(' . IPS_GetName($callerID) . '), uri=' . $uri . ', err=' . $err . ', statuscode=' . $statuscode, 0);
 
         $now = time();
-        $stats = json_decode($this->ReadAttributeString('ApiCallStats'), true);
+
+        @$stats = $this->ReadAttributeString('ApiCallStats');
+        if ($stats == false) {
+            return;
+        }
+
+        @$stats = json_decode($stats, true);
         if ($stats == false) {
             $stats = [];
         }
@@ -2304,7 +2314,12 @@ trait StubsCommonLib
 
     private function ShowApiCallStats()
     {
-        $stats = json_decode($this->ReadAttributeString('ApiCallStats'), true);
+        @$stats = $this->ReadAttributeString('ApiCallStats');
+        if ($stats == false) {
+            return;
+        }
+
+        @$stats = json_decode($stats, true);
         if ($stats == false) {
             $msg = 'no collected data';
             $this->RequestAction('PopupMessage', $msg);
@@ -2407,24 +2422,93 @@ trait StubsCommonLib
         $this->RequestAction('PopupMessage', $msg);
     }
 
+    private function SetupDataCache(int $expires_in)
+    {
+        @$dataCache = $this->ReadAttributeString('DataCache');
+        if ($dataCache == false) {
+            return;
+        }
+        @$dataCache = json_decode($dataCache, true);
+        if ($dataCache == false) {
+            $dataCache = [];
+        }
+        $dataCache['expires_in'] = $expires_in;
+        $this->WriteAttributeString('DataCache', json_encode($dataCache));
+    }
+
     private function RefreshDataCache()
     {
-        $this->WriteAttributeString('DataCache', '');
+        @$dataCache = $this->ReadAttributeString('DataCache');
+        if ($dataCache == false) {
+            return;
+        }
+        @$dataCache = json_decode($dataCache, true);
+        if ($dataCache == false) {
+            $dataCache = [
+                'expires_in' => 24 * 60 * 60,
+                'tstamp'     => 0,
+            ];
+        }
+        $dataCache['expiration'] = 0;
+        $dataCache['data'] = [];
+        $this->WriteAttributeString('DataCache', json_encode($dataCache));
         $this->ReloadForm();
+    }
+
+    private function ReadDataCache()
+    {
+        @$dataCache = $this->ReadAttributeString('DataCache');
+        if ($dataCache == false) {
+            return false;
+        }
+        @$dataCache = json_decode($dataCache, true);
+        if ($dataCache == false) {
+            $dataCache = [
+                'expires_in' => 24 * 60 * 60,
+                'expiration' => 0,
+                'tstamp'     => 0,
+                'data'       => [],
+            ];
+        }
+        if (isset($dataCache['expiration']) && $dataCache['expiration'] < time()) {
+            $dataCache['expiration'] = 0;
+            $dataCache['data'] = [];
+        }
+        return $dataCache;
+    }
+
+    private function WriteDataCache(array $dataCache, int $dataTstamp)
+    {
+        if ($dataTstamp) {
+            $dataCache['tstamp'] = $dataTstamp;
+            if (isset($dataCache['expires_in']) == false) {
+                $dataCache['expires_in'] = 24 * 60 * 60;
+            }
+            $dataCache['expiration'] = $dataTstamp + $dataCache['expires_in'];
+        }
+        @$this->WriteAttributeString('DataCache', json_encode($dataCache));
     }
 
     private function GetRefreshDataCacheFormAction()
     {
-        $cache = json_decode($this->ReadAttributeString('DataCache'), true);
-        if (isset($cache['tstamp']) && $cache['tstamp'] > 0) {
-            $t = date('d.m.y H:i:s', $cache['tstamp']);
+        $dataCache = $this->ReadDataCache();
+
+        $expires_in = isset($dataCache['expires_in']) ? $dataCache['expires_in'] : (24 * 60 * 60);
+        if (isset($dataCache['tstamp']) && $dataCache['tstamp'] > 0) {
+            $t = date('d.m.y H:i:s', $dataCache['tstamp']);
         } else {
             $t = '-';
         }
-        $s = $this->TranslateFormat('(last updated: ${tstamp})', ['${tstamp}' => $t]);
+        $s = $this->TranslateFormat(
+            'To avoid API limitations, data in the configurator is only requested every ${expires_in}; intermediate requests are served from the data cache (last updated: ${tstamp}).',
+            [
+                '${expires_in}' => $this->seconds2duration($expires_in),
+                '${tstamp}'     => $t,
+            ]
+        );
 
         $formAction = [
-            'type'    => 'RowLayout',
+            'type'    => 'ColumnLayout',
             'items'   => [
                 [
                     'type'    => 'Button',

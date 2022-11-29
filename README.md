@@ -131,6 +131,11 @@ dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, arra
 `array GetApiCallStatsFormItem()`<br>
 `void ShowApiCallStats()`<br>
 
+`void SetupDataCache(int $expires_in)`<br>
+`void RefreshDataCache()`<br>
+`array ReadDataCache()`<br>
+`void WriteDataCache(array $dataCache, int $dataTstamp)`<br>
+`array GetRefreshDataCacheFormAction()`<br>
 
 Definierte Konstanten
 ```
