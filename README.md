@@ -130,6 +130,7 @@ dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, arra
 `void ApiCallsCollect(string $url, string $err, int $statuscode)`<br>
 `array GetApiCallStatsFormItem()`<br>
 `void ShowApiCallStats()`<br>
+`void ClearApiCallStats()`<br>
 
 `void SetupDataCache(int $expires_in)`<br>
 `void RefreshDataCache()`<br>

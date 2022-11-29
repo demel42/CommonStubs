@@ -93,6 +93,9 @@
 			"minute": "Minute",
 			"second": "Sekunde",
 
+			"__actions__": "ClearApiCallStats",
+			"Clear API call statistics": "API-Aufrufstatistik löschen",
+
 			"__actions__": "GetRefreshDataCacheFormAction",
 			"To avoid API limitations, data in the configurator is only requested every ${expires_in}; intermediate requests are served from the data cache (last updated: ${tstamp}).":
 				"Um API-Limitierungen zu vermeiden, werden im Konfigurator Daten nur alle ${expires_in} abgefragt; zwischenzeitliche Abfragen werden aus dem Daten-Cache bedient (zuletzt aktualisiert: ${tstamp}).",

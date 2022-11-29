@@ -1357,6 +1357,10 @@ trait StubsCommonLib
                 $this->ShowApiCallStats();
                 $r = true;
                 break;
+            case 'ClearApiCallStats':
+                $this->ClearApiCallStats();
+                $r = true;
+                break;
             case 'RefreshDataCache':
                 $this->RefreshDataCache();
                 $r = true;
@@ -2209,7 +2213,10 @@ trait StubsCommonLib
         $day_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.day', 0);
         $hour_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.hour', 0);
 
-        $total_ref_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.total', time());
+        $total_ref_tstamp = (int) $this->GetArrayElem($stats, 'tstamps.total', 0);
+        if ($total_ref_tstamp == 0) {
+            $total_ref_tstamp = time();
+        }
         $month_ref_tstamp = strtotime(date('01.m.Y 00:00:00', $now));
         $day_ref_tstamp = strtotime(date('d.m.Y 00:00:00', $now));
         $hour_ref_tstamp = strtotime(date('d.m.Y H:00:00', $now));
@@ -2278,9 +2285,19 @@ trait StubsCommonLib
     private function GetApiCallStatsFormItem()
     {
         $item = [
-            'type'    => 'Button',
-            'caption' => 'Show API call statistics',
-            'onClick' => 'IPS_RequestAction($id, "ShowApiCallStats", "");'
+            'type'    => 'RowLayout',
+            'items'   => [
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Show API call statistics',
+                    'onClick' => 'IPS_RequestAction($id, "ShowApiCallStats", "");'
+                ],
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Clear API call statistics',
+                    'onClick' => 'IPS_RequestAction($id, "ClearApiCallStats", "");'
+                ],
+            ],
         ];
         return $item;
     }
@@ -2336,7 +2353,7 @@ trait StubsCommonLib
         }
 
         $msg = $this->Translate('Statistics of API calls');
-        if (isset($stats['tstamps']['total'])) {
+        if (isset($stats['tstamps']['total']) && $stats['tstamps']['total'] > 0) {
             $msg .= ' (' . $this->Translate('since') . ' ' . date('d.m.y H:i:s', $stats['tstamps']['total']) . ')';
         }
         $msg .= PHP_EOL;
@@ -2420,6 +2437,27 @@ trait StubsCommonLib
         }
 
         $this->RequestAction('PopupMessage', $msg);
+    }
+
+    private function ClearApiCallStats()
+    {
+        @$stats = $this->ReadAttributeString('ApiCallStats');
+        if ($stats == false) {
+            return;
+        }
+
+        @$stats = json_decode($stats, true);
+        $stats_new = [
+            'tstamps' => [
+                'total' => 0,
+                'month' => 0,
+                'day'   => 0,
+                'hour'  => 0,
+            ],
+            'entries' => [],
+            'limits'  => (array) $this->GetArrayElem($stats, 'limits', []),
+        ];
+        $this->WriteAttributeString('ApiCallStats', json_encode($stats_new));
     }
 
     private function SetupDataCache(int $expires_in)
