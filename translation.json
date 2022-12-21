@@ -97,9 +97,9 @@
 			"Clear API call statistics": "API-Aufrufstatistik löschen",
 
 			"__actions__": "GetRefreshDataCacheFormAction",
-			"To avoid API limitations, data in the configurator is only requested every ${expires_in}; intermediate requests are served from the data cache (last updated: ${tstamp}).":
-				"Um API-Limitierungen zu vermeiden, werden im Konfigurator Daten nur alle ${expires_in} abgefragt; zwischenzeitliche Abfragen werden aus dem Daten-Cache bedient (zuletzt aktualisiert: ${tstamp}).",
-			"Refresh data cache": "Datencache aktualisieren",
+			"To avoid API limitations, configurator data is requested only every ${expires_in} (last: ${tstamp})":
+				"Zur Vermeidung von API-Limitierungen werden Konfigurator-Daten nur alle ${expires_in} (zuletzt: ${tstamp}) abgefragt",
+			"Refresh cache": "Cache aktualisieren",
 
 			"__status__": "Status",
 			"Instance getting created": "Instanz wird erstellt",

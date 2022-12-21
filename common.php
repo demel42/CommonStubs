@@ -2538,7 +2538,7 @@ trait StubsCommonLib
             $t = '-';
         }
         $s = $this->TranslateFormat(
-            'To avoid API limitations, data in the configurator is only requested every ${expires_in}; intermediate requests are served from the data cache (last updated: ${tstamp}).',
+            'To avoid API limitations, configurator data is requested only every ${expires_in} (last: ${tstamp})',
             [
                 '${expires_in}' => $this->seconds2duration($expires_in),
                 '${tstamp}'     => $t,
@@ -2546,16 +2546,16 @@ trait StubsCommonLib
         );
 
         $formAction = [
-            'type'    => 'ColumnLayout',
+            'type'    => 'RowLayout',
             'items'   => [
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Refresh data cache',
-                    'onClick' => 'IPS_RequestAction($id, "RefreshDataCache", "");'
-                ],
                 [
                     'type'    => 'Label',
                     'caption' => $s,
+                ],
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Refresh cache',
+                    'onClick' => 'IPS_RequestAction($id, "RefreshDataCache", "");'
                 ],
             ],
         ];
