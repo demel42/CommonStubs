@@ -2496,10 +2496,9 @@ trait StubsCommonLib
     private function ReadDataCache()
     {
         @$dataCache = $this->ReadAttributeString('DataCache');
-        if ($dataCache == false) {
-            return false;
+        if ($dataCache != false) {
+            @$dataCache = json_decode($dataCache, true);
         }
-        @$dataCache = json_decode($dataCache, true);
         if ($dataCache == false) {
             $dataCache = [
                 'expires_in' => 24 * 60 * 60,
