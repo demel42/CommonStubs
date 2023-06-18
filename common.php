@@ -1824,7 +1824,7 @@ trait StubsCommonLib
         $eq = $oldVersion == $newVersion;
         if ($eq == true) {
             $this->SendDebug(__FUNCTION__, 'equal version (' . $m . ')', 0);
-            return false;
+            return '';
         }
 
         if (method_exists($this, 'CheckModuleUpdate')) {
@@ -1858,7 +1858,7 @@ trait StubsCommonLib
         $newInfo['tstamp'] = time();
         $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
 
-        return false;
+        return '';
     }
 
     private function CompleteUpdate()
@@ -1917,6 +1917,11 @@ trait StubsCommonLib
         $this->WriteAttributeString('UpdateInfo', json_encode($newInfo));
 
         IPS_ApplyChanges($this->InstanceID);
+
+        // Reihenfolgeproblem: im ApplyChanges() wird der Status auf != IS_UPDATEUNCOMPLETED gesetzt, da ist
+        // aber die ConfigurationForm mit dem Hinweis auf ein ausstehendes Update schon erstellt
+        $this->ReloadForm();
+
         return true;
     }
 
@@ -2002,10 +2007,13 @@ trait StubsCommonLib
         }
 
         if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
-            $formElements[] = [
-                'type'    => 'Label',
-                'caption' => $this->CheckUpdate(),
-            ];
+            $s = $this->CheckUpdate();
+            if ($s != '') {
+                $formElements[] = [
+                    'type'    => 'Label',
+                    'caption' => $s,
+                ];
+            }
             return $formElements;
         }
 
