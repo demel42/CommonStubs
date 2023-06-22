@@ -628,7 +628,7 @@ trait StubsCommonLib
     private function GetSystemLocation()
     {
         $ids = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}');
-        if (count($ids)) {
+        if (count($ids) > 0) {
             return json_decode(IPS_GetProperty($ids[0], 'Location'), true);
         } else {
             return ['latitude' => 0, 'longitude' => 0];
