@@ -630,9 +630,8 @@ trait StubsCommonLib
         $ids = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}');
         if (count($ids)) {
             return json_decode(IPS_GetProperty($ids[0], 'Location'), true);
-        }
-        else {
-            return ["latitude" => 0, "longitude" => 0];
+        } else {
+            return ['latitude' => 0, 'longitude' => 0];
         }
     }
 
@@ -1151,7 +1150,7 @@ trait StubsCommonLib
                         $inst = IPS_GetInstance($objID);
                         $moduleType = $inst['ModuleInfo']['ModuleType'];
                         $referencedBy[] = [
-                            'ObjektID' => $objID,
+                            'ObjektID'   => $objID,
                             'ObjectType' => $objectType,
                             'ModuleType' => $moduleType,
                             'ObjectArea' => $this->ObjectType2Name($objectType),
@@ -1162,7 +1161,7 @@ trait StubsCommonLib
                         $script = IPS_GetScript($objID);
                         $scriptType = $script['ScriptType'];
                         $referencedBy[] = [
-                            'ObjektID' => $objID,
+                            'ObjektID'   => $objID,
                             'ObjectType' => $objectType,
                             'ScriptType' => $scriptType,
                             'ObjectArea' => $this->ScriptType2Name($scriptType),
@@ -1194,9 +1193,9 @@ trait StubsCommonLib
                 }
                 $eventType = $event['EventType'];
                 $referencedBy[] = [
-                    'ObjektID' => $objID,
+                    'ObjektID'   => $objID,
                     'ObjectType' => $objectType,
-                    'EventType' => $eventType,
+                    'EventType'  => $eventType,
                     'ObjectArea' => $this->EventType2Name($eventType),
                     'ObjectName' => IPS_GetName($objID),
                 ];
@@ -1233,55 +1232,55 @@ trait StubsCommonLib
                     switch ($objectType) {
                         case OBJECTTYPE_CATEGORY:
                             $referencedVars[] = [
-                                'VariableID' => $varID,
+                                'VariableID'    => $varID,
                                 'VariableIdent' => $varIdent,
-                                'VariableName' => $varName,
-                                'ObjektID' => $chldID,
-                                'ObjectType' => $objectType,
-                                'ObjectArea' => $this->ObjectType2Name($objectType),
-                                'ObjectName' => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'ObjectArea'    => $this->ObjectType2Name($objectType),
+                                'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
                             ];
                             break;
                         case OBJECTTYPE_INSTANCE:
                             $inst = IPS_GetInstance($chldID);
                             $moduleType = $inst['ModuleInfo']['ModuleType'];
                             $referencedVars[] = [
-                                'VariableID' => $varID,
+                                'VariableID'    => $varID,
                                 'VariableIdent' => $varIdent,
-                                'VariableName' => $varName,
-                                'ObjektID' => $chldID,
-                                'ObjectType' => $objectType,
-                                'ModuleType' => $moduleType,
-                                'ObjectArea' => $this->ObjectType2Name($objectType),
-                                'ObjectName' => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'ModuleType'    => $moduleType,
+                                'ObjectArea'    => $this->ObjectType2Name($objectType),
+                                'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
                             ];
                             break;
                         case OBJECTTYPE_SCRIPT:
                             $script = IPS_GetScript($chldID);
                             $scriptType = $script['ScriptType'];
                             $referencedVars[] = [
-                                'VariableID' => $varID,
+                                'VariableID'    => $varID,
                                 'VariableIdent' => $varIdent,
-                                'VariableName' => $varName,
-                                'ObjektID' => $chldID,
-                                'ObjectType' => $objectType,
-                                'ScriptType' => $scriptType,
-                                'ObjectArea' => $this->ScriptType2Name($scriptType),
-                                'ObjectName' => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . '), Zeile ' . $ref['LineNumber'],
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'ScriptType'    => $scriptType,
+                                'ObjectArea'    => $this->ScriptType2Name($scriptType),
+                                'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . '), Zeile ' . $ref['LineNumber'],
                             ];
                             break;
                         case OBJECTTYPE_EVENT:
                             $event = IPS_GetEvent($chldID);
                             $eventType = $event['EventType'];
                             $referencedVars[] = [
-                                'VariableID' => $varID,
+                                'VariableID'    => $varID,
                                 'VariableIdent' => $varIdent,
-                                'VariableName' => $varName,
-                                'ObjektID' => $chldID,
-                                'ObjectType' => $objectType,
-                                'EventType' => $eventType,
-                                'ObjectArea' => $this->EventType2Name($eventType),
-                                'ObjectName' => IPS_GetName($chldID),
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'EventType'     => $eventType,
+                                'ObjectArea'    => $this->EventType2Name($eventType),
+                                'ObjectName'    => IPS_GetName($chldID),
                             ];
                             break;
                         default:
