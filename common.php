@@ -194,14 +194,16 @@ trait StubsCommonLib
     {
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
         $used = false;
-        $instID = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}')[0];
-        $hooks = json_decode(IPS_GetProperty($instID, 'Hooks'), true);
-        foreach ($hooks as $hook) {
-            if ($hook['Hook'] == $ident) {
-                if ($hook['TargetID'] != $this->InstanceID) {
-                    $used = true;
+        $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
+        if (count($ids) > 0) {
+            $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
+            foreach ($hooks as $hook) {
+                if ($hook['Hook'] == $ident) {
+                    if ($hook['TargetID'] != $this->InstanceID) {
+                        $used = true;
+                    }
+                    break;
                 }
-                break;
             }
         }
         $this->SendDebug(__FUNCTION__, 'used=' . $this->bool2str($used), 0);
@@ -257,14 +259,16 @@ trait StubsCommonLib
     {
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
         $used = false;
-        $instID = IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}')[0];
-        $clientID = json_decode(IPS_GetProperty($instID, 'ClientIDs'), true);
-        foreach ($clientID as $clientID) {
-            if ($clientID['ClientID'] == $ident) {
-                if ($clientID['TargetID'] != $this->InstanceID) {
-                    $used = true;
+        $ids = IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}');
+        if (count($ids) > 0) {
+            $clientID = json_decode(IPS_GetProperty($ids[0], 'ClientIDs'), true);
+            foreach ($clientID as $clientID) {
+                if ($clientID['ClientID'] == $ident) {
+                    if ($clientID['TargetID'] != $this->InstanceID) {
+                        $used = true;
+                    }
+                    break;
                 }
-                break;
             }
         }
         $this->SendDebug(__FUNCTION__, 'used=' . $this->bool2str($used), 0);
@@ -623,8 +627,12 @@ trait StubsCommonLib
 
     private function GetSystemLocation()
     {
-        $id = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}')[0];
-        return json_decode(IPS_GetProperty($id, 'Location'), true);
+        $ids = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}');
+        if (count($ids) > 0) {
+            return json_decode(IPS_GetProperty($ids[0], 'Location'), true);
+        } else {
+            return ['latitude' => 0, 'longitude' => 0];
+        }
     }
 
     private function GetConfiguratorLocation(int $catID)
@@ -668,15 +676,20 @@ trait StubsCommonLib
 
     private function GetConnectUrl()
     {
-        $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-        $url = CC_GetConnectURL($instID);
-        return $url;
+        $ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}');
+        if (count($ids) > 0) {
+            return CC_GetConnectURL($ids[0]);
+        }
+        return '';
     }
 
     private function GetConnectStatus()
     {
-        $instID = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
-        return IPS_GetInstance($instID)['InstanceStatus'];
+        $ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}');
+        if (count($ids) > 0) {
+            return IPS_GetInstance($ids[0])['InstanceStatus'];
+        }
+        return IS_EBASE;
     }
 
     private function GetConnectStatusText()
@@ -742,54 +755,58 @@ trait StubsCommonLib
         $m[] = 'date=' . $d;
 
         $src = '';
-        $scID = IPS_GetInstanceListByModuleID('{F45B5D1F-56AE-4C61-9AB2-C87C63149EC3}')[0];
-        $scList = SC_GetModuleInfoList($scID);
-        foreach ($scList as $sc) {
-            if ($sc['LibraryID'] == $lib['LibraryID']) {
-                $src = ($src != '' ? ' + ' : '') . 'ModuleStore';
-                switch ($sc['Channel']) {
-                    case 1:
-                        $src .= '/Beta';
-                        break;
-                    case 2:
-                        $src .= '/Testing';
-                        break;
-                    default:
-                        break;
+        $scIDs = IPS_GetInstanceListByModuleID('{F45B5D1F-56AE-4C61-9AB2-C87C63149EC3}');
+        if (count($scIDs) > 0) {
+            $scList = SC_GetModuleInfoList($scIDs[0]);
+            foreach ($scList as $sc) {
+                if ($sc['LibraryID'] == $lib['LibraryID']) {
+                    $src = ($src != '' ? ' + ' : '') . 'ModuleStore';
+                    switch ($sc['Channel']) {
+                        case 1:
+                            $src .= '/Beta';
+                            break;
+                        case 2:
+                            $src .= '/Testing';
+                            break;
+                        default:
+                            break;
+                    }
+                    $m[] = 'source=' . $src;
+                    break;
                 }
-                $m[] = 'source=' . $src;
-                break;
             }
         }
-        $mcID = IPS_GetInstanceListByModuleID('{B8A5067A-AFC2-3798-FEDC-BCD02A45615E}')[0];
-        $mcList = MC_GetModuleList($mcID);
-        foreach ($mcList as $mc) {
-            @$g = MC_GetModule($mcID, $mc);
-            if ($g == false) {
-                continue;
-            }
-            if ($g['LibraryID'] == $lib['LibraryID']) {
-                @$r = MC_GetModuleRepositoryInfo($mcID, $mc);
-                if ($r == false) {
+        $mcIDs = IPS_GetInstanceListByModuleID('{B8A5067A-AFC2-3798-FEDC-BCD02A45615E}');
+        if (count($mcIDs) > 0) {
+            $mcList = MC_GetModuleList($mcIDs[0]);
+            foreach ($mcList as $mc) {
+                @$g = MC_GetModule($mcIDs[0], $mc);
+                if ($g == false) {
                     continue;
                 }
-                $url = $r['ModuleURL'];
-                if (preg_match('/^([^:]*):\/\/[^@]*@(.*)$/', $url, $p)) {
-                    $url = $p[1] . '://' . $p[2];
+                if ($g['LibraryID'] == $lib['LibraryID']) {
+                    @$r = MC_GetModuleRepositoryInfo($mcIDs[0], $mc);
+                    if ($r == false) {
+                        continue;
+                    }
+                    $url = $r['ModuleURL'];
+                    if (preg_match('/^([^:]*):\/\/[^@]*@(.*)$/', $url, $p)) {
+                        $url = $p[1] . '://' . $p[2];
+                    }
+                    $src = ($src != '' ? ' + ' : '') . $url;
+                    $branch = $r['ModuleBranch'];
+                    switch ($branch) {
+                        case 'master':
+                        case 'main':
+                            $m[] = 'source=git';
+                            break;
+                        default:
+                            $src .= ' [' . $branch . ']';
+                            $m[] = 'source=git' . $src . '[' . $branch . ']';
+                            break;
+                    }
+                    break;
                 }
-                $src = ($src != '' ? ' + ' : '') . $url;
-                $branch = $r['ModuleBranch'];
-                switch ($branch) {
-                    case 'master':
-                    case 'main':
-                        $m[] = 'source=git';
-                        break;
-                    default:
-                        $src .= ' [' . $branch . ']';
-                        $m[] = 'source=git' . $src . '[' . $branch . ']';
-                        break;
-                }
-                break;
             }
         }
         $s .= '  Source: ' . $src . PHP_EOL;
@@ -1028,8 +1045,6 @@ trait StubsCommonLib
             }
         }
 
-        $ucID = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}')[0];
-
         // von Instanz referenzierte Objekte
         $referencing = [];
         $refIDs = IPS_GetReferenceList($instID);
@@ -1117,161 +1132,167 @@ trait StubsCommonLib
         }
         usort($referencing, [__CLASS__, 'cmp_refs']);
 
+        $ucIDs = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}');
+
         // Instanz referenziert durch
-        $rferencedBy = [];
-        $refs = UC_FindReferences($ucID, $instID);
-        foreach ($refs as $ref) {
-            $objID = $ref['ObjectID'];
-            if (IPS_ObjectExists($objID) == false) {
-                continue;
-            }
-            $obj = IPS_GetObject($objID);
-            $objectType = $obj['ObjectType'];
-            switch ($objectType) {
-                case OBJECTTYPE_INSTANCE:
-                    $inst = IPS_GetInstance($objID);
-                    $moduleType = $inst['ModuleInfo']['ModuleType'];
-                    $rferencedBy[] = [
-                        'ObjektID'   => $objID,
-                        'ObjectType' => $objectType,
-                        'ModuleType' => $moduleType,
-                        'ObjectArea' => $this->ObjectType2Name($objectType),
-                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
-                    ];
-                    break;
-                case OBJECTTYPE_SCRIPT:
-                    $script = IPS_GetScript($objID);
-                    $scriptType = $script['ScriptType'];
-                    $rferencedBy[] = [
-                        'ObjektID'   => $objID,
-                        'ObjectType' => $objectType,
-                        'ScriptType' => $scriptType,
-                        'ObjectArea' => $this->ScriptType2Name($scriptType),
-                        'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . '), Zeile ' . $ref['LineNumber'],
-                    ];
-                    break;
-                case OBJECTTYPE_LINK:
-                    // skip
-                    break;
-                default:
-                    $this->SendDebug(__FUNCTION__, 'unhandled object=' . print_r($obj, true), 0);
-                    break;
-            }
-        }
-        $objIDs = IPS_GetChildrenIDs($instID);
-        foreach ($objIDs as $objID) {
-            if (IPS_ObjectExists($objID) == false) {
-                continue;
-            }
-            $obj = IPS_GetObject($objID);
-            $objectType = $obj['ObjectType'];
-            if ($objectType != OBJECTTYPE_EVENT) {
-                continue;
-            }
-            $event = IPS_GetEvent($objID);
-            $eventActionID = $event['EventActionID'];
-            if (in_array($eventActionID, $actionIDs) == false) {
-                continue;
-            }
-            $eventType = $event['EventType'];
-            $rferencedBy[] = [
-                'ObjektID'   => $objID,
-                'ObjectType' => $objectType,
-                'EventType'  => $eventType,
-                'ObjectArea' => $this->EventType2Name($eventType),
-                'ObjectName' => IPS_GetName($objID),
-            ];
-        }
-        usort($rferencedBy, [__CLASS__, 'cmp_refs']);
-
-        // Verwendung der Statusvariablen
-        $rferencedVars = [];
-        $objIDs = IPS_GetChildrenIDs($instID);
-        foreach ($objIDs as $objID) {
-            if (IPS_ObjectExists($objID) == false) {
-                continue;
-            }
-            $obj = IPS_GetObject($objID);
-            $objectType = $obj['ObjectType'];
-            if ($objectType != OBJECTTYPE_VARIABLE) {
-                continue;
-            }
-            if ($obj['ObjectIdent'] == '') {
-                continue;
-            }
-
-            $varID = $objID;
-            $varIdent = $obj['ObjectIdent'];
-            $varName = IPS_GetName($objID);
-
-            $refs = UC_FindReferences($ucID, $objID);
+        $referencedBy = [];
+        if (count($ucIDs) > 0) {
+            $refs = UC_FindReferences($ucIDs[0], $instID);
             foreach ($refs as $ref) {
-                $chldID = $ref['ObjectID'];
-                $chld = IPS_GetObject($chldID);
-                $objectType = $chld['ObjectType'];
+                $objID = $ref['ObjectID'];
+                if (IPS_ObjectExists($objID) == false) {
+                    continue;
+                }
+                $obj = IPS_GetObject($objID);
+                $objectType = $obj['ObjectType'];
                 switch ($objectType) {
-                    case OBJECTTYPE_CATEGORY:
-                        $rferencedVars[] = [
-                            'VariableID'    => $varID,
-                            'VariableIdent' => $varIdent,
-                            'VariableName'  => $varName,
-                            'ObjektID'      => $chldID,
-                            'ObjectType'    => $objectType,
-                            'ObjectArea'    => $this->ObjectType2Name($objectType),
-                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
-                        ];
-                        break;
                     case OBJECTTYPE_INSTANCE:
-                        $inst = IPS_GetInstance($chldID);
+                        $inst = IPS_GetInstance($objID);
                         $moduleType = $inst['ModuleInfo']['ModuleType'];
-                        $rferencedVars[] = [
-                            'VariableID'    => $varID,
-                            'VariableIdent' => $varIdent,
-                            'VariableName'  => $varName,
-                            'ObjektID'      => $chldID,
-                            'ObjectType'    => $objectType,
-                            'ModuleType'    => $moduleType,
-                            'ObjectArea'    => $this->ObjectType2Name($objectType),
-                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                        $referencedBy[] = [
+                            'ObjektID'   => $objID,
+                            'ObjectType' => $objectType,
+                            'ModuleType' => $moduleType,
+                            'ObjectArea' => $this->ObjectType2Name($objectType),
+                            'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                         ];
                         break;
                     case OBJECTTYPE_SCRIPT:
-                        $script = IPS_GetScript($chldID);
+                        $script = IPS_GetScript($objID);
                         $scriptType = $script['ScriptType'];
-                        $rferencedVars[] = [
-                            'VariableID'    => $varID,
-                            'VariableIdent' => $varIdent,
-                            'VariableName'  => $varName,
-                            'ObjektID'      => $chldID,
-                            'ObjectType'    => $objectType,
-                            'ScriptType'    => $scriptType,
-                            'ObjectArea'    => $this->ScriptType2Name($scriptType),
-                            'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . '), Zeile ' . $ref['LineNumber'],
+                        $referencedBy[] = [
+                            'ObjektID'   => $objID,
+                            'ObjectType' => $objectType,
+                            'ScriptType' => $scriptType,
+                            'ObjectArea' => $this->ScriptType2Name($scriptType),
+                            'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . '), Zeile ' . $ref['LineNumber'],
                         ];
                         break;
-                    case OBJECTTYPE_EVENT:
-                        $event = IPS_GetEvent($chldID);
-                        $eventType = $event['EventType'];
-                        $rferencedVars[] = [
-                            'VariableID'    => $varID,
-                            'VariableIdent' => $varIdent,
-                            'VariableName'  => $varName,
-                            'ObjektID'      => $chldID,
-                            'ObjectType'    => $objectType,
-                            'EventType'     => $eventType,
-                            'ObjectArea'    => $this->EventType2Name($eventType),
-                            'ObjectName'    => IPS_GetName($chldID),
-                        ];
+                    case OBJECTTYPE_LINK:
+                        // skip
                         break;
                     default:
+                        $this->SendDebug(__FUNCTION__, 'unhandled object=' . print_r($obj, true), 0);
                         break;
                 }
             }
+            $objIDs = IPS_GetChildrenIDs($instID);
+            foreach ($objIDs as $objID) {
+                if (IPS_ObjectExists($objID) == false) {
+                    continue;
+                }
+                $obj = IPS_GetObject($objID);
+                $objectType = $obj['ObjectType'];
+                if ($objectType != OBJECTTYPE_EVENT) {
+                    continue;
+                }
+                $event = IPS_GetEvent($objID);
+                $eventActionID = $event['EventActionID'];
+                if (in_array($eventActionID, $actionIDs) == false) {
+                    continue;
+                }
+                $eventType = $event['EventType'];
+                $referencedBy[] = [
+                    'ObjektID'   => $objID,
+                    'ObjectType' => $objectType,
+                    'EventType'  => $eventType,
+                    'ObjectArea' => $this->EventType2Name($eventType),
+                    'ObjectName' => IPS_GetName($objID),
+                ];
+            }
+            usort($referencedBy, [__CLASS__, 'cmp_refs']);
         }
-        usort($rferencedVars, [__CLASS__, 'cmp_refs']);
+
+        // Verwendung der Statusvariablen
+        $referencedVars = [];
+        if (count($ucIDs) > 0) {
+            $objIDs = IPS_GetChildrenIDs($instID);
+            foreach ($objIDs as $objID) {
+                if (IPS_ObjectExists($objID) == false) {
+                    continue;
+                }
+                $obj = IPS_GetObject($objID);
+                $objectType = $obj['ObjectType'];
+                if ($objectType != OBJECTTYPE_VARIABLE) {
+                    continue;
+                }
+                if ($obj['ObjectIdent'] == '') {
+                    continue;
+                }
+
+                $varID = $objID;
+                $varIdent = $obj['ObjectIdent'];
+                $varName = IPS_GetName($objID);
+
+                $refs = UC_FindReferences($ucIDs[0], $objID);
+                foreach ($refs as $ref) {
+                    $chldID = $ref['ObjectID'];
+                    $chld = IPS_GetObject($chldID);
+                    $objectType = $chld['ObjectType'];
+                    switch ($objectType) {
+                        case OBJECTTYPE_CATEGORY:
+                            $referencedVars[] = [
+                                'VariableID'    => $varID,
+                                'VariableIdent' => $varIdent,
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'ObjectArea'    => $this->ObjectType2Name($objectType),
+                                'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                            ];
+                            break;
+                        case OBJECTTYPE_INSTANCE:
+                            $inst = IPS_GetInstance($chldID);
+                            $moduleType = $inst['ModuleInfo']['ModuleType'];
+                            $referencedVars[] = [
+                                'VariableID'    => $varID,
+                                'VariableIdent' => $varIdent,
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'ModuleType'    => $moduleType,
+                                'ObjectArea'    => $this->ObjectType2Name($objectType),
+                                'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
+                            ];
+                            break;
+                        case OBJECTTYPE_SCRIPT:
+                            $script = IPS_GetScript($chldID);
+                            $scriptType = $script['ScriptType'];
+                            $referencedVars[] = [
+                                'VariableID'    => $varID,
+                                'VariableIdent' => $varIdent,
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'ScriptType'    => $scriptType,
+                                'ObjectArea'    => $this->ScriptType2Name($scriptType),
+                                'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . '), Zeile ' . $ref['LineNumber'],
+                            ];
+                            break;
+                        case OBJECTTYPE_EVENT:
+                            $event = IPS_GetEvent($chldID);
+                            $eventType = $event['EventType'];
+                            $referencedVars[] = [
+                                'VariableID'    => $varID,
+                                'VariableIdent' => $varIdent,
+                                'VariableName'  => $varName,
+                                'ObjektID'      => $chldID,
+                                'ObjectType'    => $objectType,
+                                'EventType'     => $eventType,
+                                'ObjectArea'    => $this->EventType2Name($eventType),
+                                'ObjectName'    => IPS_GetName($chldID),
+                            ];
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            usort($referencedVars, [__CLASS__, 'cmp_refs']);
+        }
 
         // Timer der Instanz
-        $rferencedTimer = [];
+        $referencedTimer = [];
         $timerList = IPS_GetTimerList();
         foreach ($timerList as $t) {
             $timer = IPS_GetTimer($t);
@@ -1287,7 +1308,7 @@ trait StubsCommonLib
             $nextRun = $ts > 0 ? date('d.m.Y H:i:s', $ts) : '-';
             $ts = $timer['LastRun'];
             $lastRun = $ts > 0 ? date('d.m.Y H:i:s', $ts) : '-';
-            $rferencedTimer[] = [
+            $referencedTimer[] = [
                 'TimerID'  => $timer['TimerID'],
                 'Name'     => $timer['Name'],
                 'interval' => $duration,
@@ -1295,13 +1316,13 @@ trait StubsCommonLib
                 'lastRun'  => $lastRun,
             ];
         }
-        usort($rferencedTimer, [__CLASS__, 'cmp_Timer']);
+        usort($referencedTimer, [__CLASS__, 'cmp_Timer']);
 
         $r = [
             'Referencing'     => $referencing,
-            'ReferencedBy'    => $rferencedBy,
-            'ReferencedVars'  => $rferencedVars,
-            'ReferencedTimer' => $rferencedTimer,
+            'ReferencedBy'    => $referencedBy,
+            'ReferencedVars'  => $referencedVars,
+            'ReferencedTimer' => $referencedTimer,
         ];
 
         return $r;
@@ -2156,13 +2177,17 @@ trait StubsCommonLib
             $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return false;
         }
-        $archivID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-        $reAggregate = AC_GetLoggingStatus($archivID, $varID) == false || AC_GetAggregationType($archivID, $varID) != $aggregationType;
-        AC_SetLoggingStatus($archivID, $varID, true);
-        AC_SetAggregationType($archivID, $varID, $aggregationType);
-        if ($reAggregate) {
-            AC_ReAggregateVariable($archivID, $varID);
+        $archivIDs = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}');
+        if (count($archivIDs) == 0) {
+            return false;
         }
+        $reAggregate = AC_GetLoggingStatus($archivIDs[0], $varID) == false || AC_GetAggregationType($archivIDs[0], $varID) != $aggregationType;
+        AC_SetLoggingStatus($archivIDs[0], $varID, true);
+        AC_SetAggregationType($archivIDs[0], $varID, $aggregationType);
+        if ($reAggregate) {
+            AC_ReAggregateVariable($archivIDs[0], $varID);
+        }
+        return true;
     }
 
     private function UnsetVariableLogging(string $ident)
@@ -2172,8 +2197,12 @@ trait StubsCommonLib
             $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return false;
         }
-        $archivID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-        AC_SetLoggingStatus($archivID, $varID, false);
+        $archivIDs = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}');
+        if (count($archivIDs) == 0) {
+            return false;
+        }
+        AC_SetLoggingStatus($archivIDs[0], $varID, false);
+        return true;
     }
 
     private function ApiCallsSetInfo(array $limits, string $notes)
