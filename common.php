@@ -1224,7 +1224,7 @@ trait StubsCommonLib
                 $varIdent = $obj['ObjectIdent'];
                 $varName = IPS_GetName($objID);
 
-                $refs = UC_FindReferences($ucID, $objID);
+                $refs = UC_FindReferences($ucIDs[0], $objID);
                 foreach ($refs as $ref) {
                     $chldID = $ref['ObjectID'];
                     $chld = IPS_GetObject($chldID);
