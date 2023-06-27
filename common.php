@@ -897,15 +897,39 @@ trait StubsCommonLib
     private function cmp_refs($a, $b)
     {
         if (isset($a['VariableIdent']) && isset($b['VariableIdent'])) {
+            if (is_string($a['VariableIdent']) == false) {
+                $this->SendDebug(__FUNCTION__, 'invalid VariableIdent, a=' . print_r($a, true), 0);
+                return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
+            }
+            if (is_string($b['VariableIdent']) == false) {
+                $this->SendDebug(__FUNCTION__, 'invalid VariableIdent, b=' . print_r($b, true), 0);
+                return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
+            }
             if ($a['VariableIdent'] != $b['VariableIdent']) {
                 return (strcmp($a['VariableIdent'], $b['VariableIdent']) < 0) ? -1 : 1;
             }
         }
 
+        if (is_string($a['ObjectArea']) == false) {
+            $this->SendDebug(__FUNCTION__, 'invalid ObjectArea, a=' . print_r($a, true), 0);
+            return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
+        }
+        if (is_string($b['ObjectArea']) == false) {
+            $this->SendDebug(__FUNCTION__, 'invalid ObjectArea, b=' . print_r($b, true), 0);
+            return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
+        }
         if ($a['ObjectArea'] != $b['ObjectArea']) {
             return (strcmp($a['ObjectArea'], $b['ObjectArea']) < 0) ? -1 : 1;
         }
 
+        if (is_string($a['ObjectName']) == false) {
+            $this->SendDebug(__FUNCTION__, 'invalid ObjectName, a=' . print_r($a, true), 0);
+            return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
+        }
+        if (is_string($b['ObjectName']) == false) {
+            $this->SendDebug(__FUNCTION__, 'invalid ObjectName, b=' . print_r($b, true), 0);
+            return ($a['ObjektID'] < $b['ObjektID']) ? -1 : 1;
+        }
         if ($a['ObjectName'] != $b['ObjectName']) {
             return (strcmp($a['ObjectName'], $b['ObjectName']) < 0) ? -1 : 1;
         }
@@ -1054,12 +1078,17 @@ trait StubsCommonLib
             }
             $obj = IPS_GetObject($objID);
             $objectType = $obj['ObjectType'];
+            $objectArea = $this->ObjectType2Name($objectType);
+            if ($objectArea == false) {
+                $objectArea = '';
+                $this->SendDebug(__FUNCTION__, 'unknown object type of ' . print_r($obj, true), 0);
+            }
             switch ($objectType) {
                 case OBJECTTYPE_CATEGORY:
                     $referencing[] = [
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
-                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectArea' => $objectArea,
                         'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
@@ -1070,7 +1099,7 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'ModuleType' => $moduleType,
-                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectArea' => $objectArea,
                         'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
@@ -1081,29 +1110,39 @@ trait StubsCommonLib
                         'ObjektID'     => $objID,
                         'ObjectType'   => $objectType,
                         'VariableType' => $variableType,
-                        'ObjectArea'   => $this->ObjectType2Name($objectType),
+                        'ObjectArea'   => $objectArea,
                         'ObjectName'   => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_SCRIPT:
                     $script = IPS_GetScript($objID);
                     $scriptType = $script['ScriptType'];
+                    $scriptArea = $this->ScriptType2Name($scriptType);
+                    if ($scriptArea == false) {
+                        $scriptArea = '';
+                        $this->SendDebug(__FUNCTION__, 'unknown script type of ' . print_r($script, true), 0);
+                    }
                     $referencing[] = [
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'ScriptType' => $scriptType,
-                        'ObjectArea' => $this->ScriptType2Name($scriptType),
+                        'ObjectArea' => $scriptArea,
                         'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
                 case OBJECTTYPE_EVENT:
                     $event = IPS_GetEvent($objID);
                     $eventType = $event['EventType'];
+                    $eventArea = $this->EventType2Name($eventType);
+                    if ($eventArea == false) {
+                        $eventArea = '';
+                        $this->SendDebug(__FUNCTION__, 'unknown event type of ' . print_r($event, true), 0);
+                    }
                     $referencing[] = [
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'EventType'  => $eventType,
-                        'ObjectArea' => $this->EventType2Name($eventType),
+                        'ObjectArea' => $eventArea,
                         'ObjectName' => IPS_GetName($objID),
                     ];
                     break;
@@ -1114,7 +1153,7 @@ trait StubsCommonLib
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
                         'MediaType'  => $mediaType,
-                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectArea' => $objectArea,
                         'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                     ];
                     break;
@@ -1122,7 +1161,7 @@ trait StubsCommonLib
                     $referencing[] = [
                         'ObjektID'   => $objID,
                         'ObjectType' => $objectType,
-                        'ObjectArea' => $this->ObjectType2Name($objectType),
+                        'ObjectArea' => $objectArea,
                         'ObjectName' => IPS_GetName($objID),
                     ];
                     break;
@@ -1145,6 +1184,11 @@ trait StubsCommonLib
                 }
                 $obj = IPS_GetObject($objID);
                 $objectType = $obj['ObjectType'];
+                $objectArea = $this->ObjectType2Name($objectType);
+                if ($objectArea == false) {
+                    $objectArea = '';
+                    $this->SendDebug(__FUNCTION__, 'unknown object type of ' . print_r($obj, true), 0);
+                }
                 switch ($objectType) {
                     case OBJECTTYPE_INSTANCE:
                         $inst = IPS_GetInstance($objID);
@@ -1153,18 +1197,23 @@ trait StubsCommonLib
                             'ObjektID'   => $objID,
                             'ObjectType' => $objectType,
                             'ModuleType' => $moduleType,
-                            'ObjectArea' => $this->ObjectType2Name($objectType),
+                            'ObjectArea' => $objectArea,
                             'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')',
                         ];
                         break;
                     case OBJECTTYPE_SCRIPT:
                         $script = IPS_GetScript($objID);
                         $scriptType = $script['ScriptType'];
+                        $scriptArea = $this->ScriptType2Name($scriptType);
+                        if ($scriptArea == false) {
+                            $scriptArea = '';
+                            $this->SendDebug(__FUNCTION__, 'unknown script type of ' . print_r($script, true), 0);
+                        }
                         $referencedBy[] = [
                             'ObjektID'   => $objID,
                             'ObjectType' => $objectType,
                             'ScriptType' => $scriptType,
-                            'ObjectArea' => $this->ScriptType2Name($scriptType),
+                            'ObjectArea' => $scriptArea,
                             'ObjectName' => IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . '), Zeile ' . $ref['LineNumber'],
                         ];
                         break;
@@ -1192,11 +1241,16 @@ trait StubsCommonLib
                     continue;
                 }
                 $eventType = $event['EventType'];
+                $eventArea = $this->EventType2Name($eventType);
+                if ($eventArea == false) {
+                    $eventArea = '';
+                    $this->SendDebug(__FUNCTION__, 'unknown event type of ' . print_r($event, true), 0);
+                }
                 $referencedBy[] = [
                     'ObjektID'   => $objID,
                     'ObjectType' => $objectType,
                     'EventType'  => $eventType,
-                    'ObjectArea' => $this->EventType2Name($eventType),
+                    'ObjectArea' => $eventArea,
                     'ObjectName' => IPS_GetName($objID),
                 ];
             }
@@ -1229,6 +1283,11 @@ trait StubsCommonLib
                     $chldID = $ref['ObjectID'];
                     $chld = IPS_GetObject($chldID);
                     $objectType = $chld['ObjectType'];
+                    $objectArea = $this->ObjectType2Name($objectType);
+                    if ($objectArea == false) {
+                        $objectArea = '';
+                        $this->SendDebug(__FUNCTION__, 'unknown object type of ' . print_r($obj, true), 0);
+                    }
                     switch ($objectType) {
                         case OBJECTTYPE_CATEGORY:
                             $referencedVars[] = [
@@ -1237,7 +1296,7 @@ trait StubsCommonLib
                                 'VariableName'  => $varName,
                                 'ObjektID'      => $chldID,
                                 'ObjectType'    => $objectType,
-                                'ObjectArea'    => $this->ObjectType2Name($objectType),
+                                'ObjectArea'    => $objectArea,
                                 'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
                             ];
                             break;
@@ -1251,13 +1310,18 @@ trait StubsCommonLib
                                 'ObjektID'      => $chldID,
                                 'ObjectType'    => $objectType,
                                 'ModuleType'    => $moduleType,
-                                'ObjectArea'    => $this->ObjectType2Name($objectType),
+                                'ObjectArea'    => $objectArea,
                                 'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . ')',
                             ];
                             break;
                         case OBJECTTYPE_SCRIPT:
                             $script = IPS_GetScript($chldID);
                             $scriptType = $script['ScriptType'];
+                            $scriptArea = $this->ScriptType2Name($scriptType);
+                            if ($scriptArea == false) {
+                                $scriptArea = '';
+                                $this->SendDebug(__FUNCTION__, 'unknown script type of ' . print_r($script, true), 0);
+                            }
                             $referencedVars[] = [
                                 'VariableID'    => $varID,
                                 'VariableIdent' => $varIdent,
@@ -1265,13 +1329,18 @@ trait StubsCommonLib
                                 'ObjektID'      => $chldID,
                                 'ObjectType'    => $objectType,
                                 'ScriptType'    => $scriptType,
-                                'ObjectArea'    => $this->ScriptType2Name($scriptType),
+                                'ObjectArea'    => $scriptArea,
                                 'ObjectName'    => IPS_GetName($chldID) . ' (' . IPS_GetName(IPS_GetParent($chldID)) . '), Zeile ' . $ref['LineNumber'],
                             ];
                             break;
                         case OBJECTTYPE_EVENT:
                             $event = IPS_GetEvent($chldID);
                             $eventType = $event['EventType'];
+                            $eventArea = $this->EventType2Name($eventType);
+                            if ($eventArea == false) {
+                                $eventArea = '';
+                                $this->SendDebug(__FUNCTION__, 'unknown event type of ' . print_r($event, true), 0);
+                            }
                             $referencedVars[] = [
                                 'VariableID'    => $varID,
                                 'VariableIdent' => $varIdent,
@@ -1279,7 +1348,7 @@ trait StubsCommonLib
                                 'ObjektID'      => $chldID,
                                 'ObjectType'    => $objectType,
                                 'EventType'     => $eventType,
-                                'ObjectArea'    => $this->EventType2Name($eventType),
+                                'ObjectArea'    => $eventArea,
                                 'ObjectName'    => IPS_GetName($chldID),
                             ];
                             break;
@@ -1704,17 +1773,22 @@ trait StubsCommonLib
         foreach ($chain as $objID) {
             $obj = IPS_GetObject($objID);
             $objectType = $obj['ObjectType'];
+            $objectArea = $this->ObjectType2Name($objectType);
+            if ($objectArea == false) {
+                $objectArea = '';
+                $this->SendDebug(__FUNCTION__, 'unknown object type of ' . print_r($obj, true), 0);
+            }
             switch ($objectType) {
                 case OBJECTTYPE_CATEGORY:
                 case OBJECTTYPE_INSTANCE:
                 case OBJECTTYPE_VARIABLE:
                 case OBJECTTYPE_SCRIPT:
                 case OBJECTTYPE_MEDIA:
-                    $chainS[] = $this->ObjectType2Name($objectType) . ' #' . $objID . ' ' . IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')';
+                    $chainS[] = $objectArea . ' #' . $objID . ' ' . IPS_GetName($objID) . ' (' . IPS_GetName(IPS_GetParent($objID)) . ')';
                     break;
                 case OBJECTTYPE_EVENT:
                 case OBJECTTYPE_LINK:
-                    $chainS[] = $this->ObjectType2Name($objectType) . ' #' . $objID . ' ' . IPS_GetName($objID);
+                    $chainS[] = $objectArea . ' #' . $objID . ' ' . IPS_GetName($objID);
                     break;
                 default:
                     break;
