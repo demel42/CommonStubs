@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+if (!defined('SCRIPTTYPE_IPSWORKFLOW')) {
+    define('SCRIPTTYPE_IPSWORKFLOW', 2);
+}
+
 trait StubsCommonLib
 {
     protected function SetValue($ident, $value)
@@ -852,8 +856,9 @@ trait StubsCommonLib
     private function ScriptType2Name($scriptType)
     {
         $map = [
-            SCRIPTTYPE_PHP  => 'PHP script',
-            SCRIPTTYPE_FLOW => 'Flow plan',
+            SCRIPTTYPE_PHP         => 'PHP script',
+            SCRIPTTYPE_FLOW        => 'Flow plan',
+            SCRIPTTYPE_IPSWORKFLOW => 'IPSWorkflow',
         ];
 
         if (isset($map[$scriptType])) {

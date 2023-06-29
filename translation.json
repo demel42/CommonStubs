@@ -47,6 +47,7 @@
 			"Link": "Verknüpfung",
 			"PHP script": "PHP-Skript",
 			"Flow plan": "Ablaufplan",
+			"IPSWorkflow": "IPSWorkflow",
 			"Triggered event": "Ausgelöstes Ereignis",
 			"Cyclic event": "Zyklisches Ereignis",
 			"Scheduled event": "Geplantes Ereignis",
