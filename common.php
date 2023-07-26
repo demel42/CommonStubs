@@ -259,6 +259,26 @@ trait StubsCommonLib
         return 'text/plain';
     }
 
+    private function GetUserDir(bool $absolute_path)
+    {
+        $dir = $absolute_path ? IPS_GetKernelDir() : '';
+        if (IPS_GetKernelVersion() < 7.0) {
+            $dir .= 'webfront' . DIRECTORY_SEPARATOR;
+        }
+        $dir .= 'user' . DIRECTORY_SEPARATOR;
+        return $dir;
+    }
+
+    private function GetSkinsDir(bool $absolute_path)
+    {
+        $dir = $absolute_path ? IPS_GetKernelDir() : '';
+        if (IPS_GetKernelVersion() < 7.0) {
+            $dir .= 'webfront' . DIRECTORY_SEPARATOR;
+        }
+        $dir .= 'skins' . DIRECTORY_SEPARATOR;
+        return $dir;
+    }
+
     private function OAuthIsUsed(string $ident)
     {
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);

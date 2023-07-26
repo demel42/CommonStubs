@@ -27,7 +27,13 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 
 `bool HookIsUsed(string $ident)`<br>
 `void RegisterHook(string $ident)`<br>
+<br>
+
 `string GetMimeType(string $extension)`<br>
+<br>
+
+`string GetUserDir(bool $absolute_path)`<br>
+`string GetSkinsDir(bool $absolute_path)`<br>
 <br>
 
 `bool OAuthIsUsed(string $ident)`<br>
