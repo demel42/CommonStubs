@@ -2331,7 +2331,7 @@ trait StubsCommonLib
         }
 
         $callerID = isset($_IPS['CallerID']) ? $_IPS['CallerID'] : $this->InstanceID;
-        $this->SendDebug(__FUNCTION__, 'caller=' . $callerID . '(' . IPS_GetName($callerID) . '), uri=' . $uri . ', err=' . $err . ', statuscode=' . $statuscode, 0);
+        // $this->SendDebug(__FUNCTION__, 'caller=' . $callerID . '(' . IPS_GetName($callerID) . '), uri=' . $uri . ', err=' . $err . ', statuscode=' . $statuscode, 0);
 
         $now = time();
 
@@ -2413,7 +2413,7 @@ trait StubsCommonLib
 
         $stats_new['entries'] = $entries_new;
 
-        $this->SendDebug(__FUNCTION__, 'ApiCalls=' . print_r($stats_new, true), 0);
+        // $this->SendDebug(__FUNCTION__, 'ApiCalls=' . print_r($stats_new, true), 0);
 
         $this->WriteAttributeString('ApiCallStats', json_encode($stats_new));
     }
