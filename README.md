@@ -46,6 +46,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string format_float(float $number, int $dec_points)`<br>
 `string seconds2duration(float $sec)`<br>
 `string int2bitmap(int $val, int $n)`<br>
+`string size2str(int $size)`<br>
 `string HttpCode2Text(int $code)`<br>
 <br>
 

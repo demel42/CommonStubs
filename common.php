@@ -409,6 +409,14 @@ trait StubsCommonLib
         return $s;
     }
 
+    private function size2str(int $size)
+    {
+        $unit = ['B', 'K', 'M', 'G', 'T', 'P'];
+        $s = @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $unit[$i];
+
+        return $s;
+    }
+
     private function format_float(float $number, int $dec_points = -1)
     {
         if (is_numeric((float) $number)) {
