@@ -2737,34 +2737,44 @@ trait StubsCommonLib
         $current = isset($stats['current']) ? $stats['current'] : [];
         $daily = isset($stats['daily']) ? $stats['daily'] : [];
 
-        if ($current['date'] != $cur_date) {
+        $cnt = isset($current['cnt']) ? $current['cnt'] : 0;
+        $memory_sum = isset($current['memory']['sum']) ? $current['memory']['sum'] : 0;
+        $memory_avg = isset($current['memory']['avg']) ? $current['memory']['avg'] : 0;
+        $memory_min = isset($current['memory']['min']) ? $current['memory']['min'] : 0;
+        $memory_max = isset($current['memory']['max']) ? $current['memory']['max'] : 0;
+        $duration_sum = isset($current['memory']['sum']) ? $current['duration']['sum'] : 0;
+        $duration_avg = isset($current['memory']['avg']) ? $current['duration']['avg'] : 0;
+        $duration_min = isset($current['memory']['min']) ? $current['duration']['min'] : 0;
+        $duration_max = isset($current['memory']['max']) ? $current['duration']['max'] : 0;
+
+        if (isset($current['date']) && $current['date'] != $cur_date) {
             $daily[] = [
                 'date'   => $current['date'],
-                'cnt'    => $current['cnt'],
+                'cnt'    => $cnt,
                 'memory' => [
-                    'avg' => $current['memory']['avg'],
-                    'min' => $current['memory']['min'],
-                    'max' => $current['memory']['max'],
+                    'avg' => $memory_avg,
+                    'min' => $memory_min,
+                    'max' => $memory_max,
                 ],
                 'duration' => [
-                    'avg' => $current['duration']['avg'],
-                    'min' => $current['duration']['min'],
-                    'max' => $current['duration']['max'],
+                    'avg' => $duration_avg,
+                    'min' => $duration_min,
+                    'max' => $duration_max,
                 ],
             ];
 
             $s = 'resource info (' . date('d.m.Y', $current['date']) . '): ' .
-            'memory Ø ' . $this->size2str((int) $current['memory']['avg']) .
+            'memory Ø ' . $this->size2str((int) $memory_avg) .
             ' [' .
-            $this->size2str((int) $current['memory']['min']) .
+            $this->size2str((int) $memory_min) .
             '...' .
-            $this->size2str((int) $current['memory']['max']) .
+            $this->size2str((int) $memory_max) .
             '], ' .
-            'duration Ø ' . number_format($current['duration']['avg'], 2) . 'ms' .
+            'duration Ø ' . number_format($duration_avg, 2) . 'ms' .
             ' [' .
-            number_format($current['duration']['min'], 2) . 'ms' .
+            number_format($duration_min, 2) . 'ms' .
             '...' .
-            number_format($current['duration']['max'], 2) . 'ms' .
+            number_format($duration_max, 2) . 'ms' .
             '], ' .
             'count=' . $cnt;
             $this->SendDebug(__FUNCTION__, $s, 0);
@@ -2772,52 +2782,35 @@ trait StubsCommonLib
             if (count($daily) > 31) {
                 array_shift($daily);
             }
-            $current = [
-                'date'    => $cur_date,
-                'cnt'     => 0,
-                'memory'  => [
-                    'sum' => 0,
-                    'avg' => 0,
-                    'min' => 0,
-                    'max' => 0,
-                ],
-                'duration' => [
-                    'sum' => 0,
-                    'avg' => 0,
-                    'min' => 0,
-                    'max' => 0,
-                ],
-            ];
+            $cnt = 0;
+            $memory_sum = 0;
+            $memory_avg = 0;
+            $memory_min = 0;
+            $memory_max = 0;
+            $duration_sum = 0;
+            $duration_avg = 0;
+            $duration_min = 0;
+            $duration_max = 0;
         }
 
         $memory = memory_get_peak_usage();
         $duration = (microtime(true) - $this->ConstructedTime) * 1000;
 
-        $cnt = $current['cnt'];
-        $memory_sum = $current['memory']['sum'];
-        $memory_avg = $current['memory']['avg'];
-        $memory_min = $current['memory']['min'];
-        $memory_max = $current['memory']['max'];
-        $duration_sum = $current['duration']['sum'];
-        $duration_avg = $current['duration']['avg'];
-        $duration_min = $current['duration']['min'];
-        $duration_max = $current['duration']['max'];
-
         $cnt++;
         $memory_sum += $memory;
         $memory_avg = $memory_sum / $cnt;
-        if ($memory_min === false || $memory_min > $memory) {
+        if ($memory_min == 0 || $memory_min > $memory) {
             $memory_min = $memory;
         }
-        if ($memory_max === false || $memory_max < $memory) {
+        if ($memory_max == 0 || $memory_max < $memory) {
             $memory_max = $memory;
         }
         $duration_sum += $duration;
         $duration_avg = $duration_sum / $cnt;
-        if ($duration_min === false || $duration_min > $duration) {
+        if ($duration_min == 0 || $duration_min > $duration) {
             $duration_min = $duration;
         }
-        if ($duration_max === false || $duration_max < $duration) {
+        if ($duration_max == 0 || $duration_max < $duration) {
             $duration_max = $duration;
         }
 
