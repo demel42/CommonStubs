@@ -863,10 +863,13 @@ trait StubsCommonLib
             'caption' => 'Information',
             'items'   => [
                 [
+                    'name'    => 'InstanceInfo',
                     'type'    => 'Label',
-                    'caption' => $this->InstanceInfo($this->InstanceID),
+                    'caption' => '',
                 ],
             ],
+            'expanded' => false,
+            'onClick'  => 'IPS_RequestAction($id, "UpdateFormData", json_encode(["area" => "InstanceInfo"]));',
         ];
         return $formAction;
     }
@@ -1468,6 +1471,10 @@ trait StubsCommonLib
                             $logV = $this->ReadModuleActivity();
                             $this->UpdateFormField('ModuleActivity', 'values', json_encode($logV));
                             $this->UpdateFormField('ModuleActivity', 'rowCount', count($logV) > 0 ? count($logV) : 1);
+                            break;
+                        case 'InstanceInfo':
+                            $s = $this->InstanceInfo($this->InstanceID);
+                            $this->UpdateFormField('InstanceInfo', 'caption', $s);
                             break;
                         default:
                             $this->SendDebug(__FUNCTION__, 'unsupported area ' . $jparams['area'], 0);
@@ -2701,5 +2708,159 @@ trait StubsCommonLib
         ];
 
         return $formAction;
+    }
+
+    private $ModuleDir;
+    private $ConstructedTime;
+
+    private function CommonContruct($dir)
+    {
+        $this->ModuleDir = $dir;
+        $this->ConstructedTime = microtime(true);
+    }
+
+    private function CommonDestruct()
+    {
+        @$stats = $this->ReadAttributeString('ModuleStats');
+        if ($stats === false) {
+            return;
+        }
+
+        $tstamp = time();
+        $cur_date = strtotime(date('d.m.Y 00:00:00', $tstamp));
+
+        @$stats = json_decode($stats, true);
+        if ($stats == false) {
+            $stats = [];
+        }
+
+        $current = isset($stats['current']) ? $stats['current'] : [];
+        $daily = isset($stats['daily']) ? $stats['daily'] : [];
+
+        if ($current['date'] != $cur_date) {
+            $daily[] = [
+                'date'   => $current['date'],
+                'cnt'    => $current['cnt'],
+                'memory' => [
+                    'avg' => $current['memory']['avg'],
+                    'min' => $current['memory']['min'],
+                    'max' => $current['memory']['max'],
+                ],
+                'duration' => [
+                    'avg' => $current['duration']['avg'],
+                    'min' => $current['duration']['min'],
+                    'max' => $current['duration']['max'],
+                ],
+            ];
+
+            $s = 'resource info (' . date('d.m.Y', $current['date']) . '): ' .
+            'memory Ø ' . $this->size2str((int) $current['memory']['avg']) .
+            ' [' .
+            $this->size2str((int) $current['memory']['min']) .
+            '...' .
+            $this->size2str((int) $current['memory']['max']) .
+            '], ' .
+            'duration Ø ' . number_format($current['duration']['avg'], 2) . 'ms' .
+            ' [' .
+            number_format($current['duration']['min'], 2) . 'ms' .
+            '...' .
+            number_format($current['duration']['max'], 2) . 'ms' .
+            '], ' .
+            'count=' . $cnt;
+            $this->SendDebug(__FUNCTION__, $s, 0);
+
+            if (count($daily) > 31) {
+                array_shift($daily);
+            }
+            $current = [
+                'date'    => $cur_date,
+                'cnt'     => 0,
+                'memory'  => [
+                    'sum' => 0,
+                    'avg' => 0,
+                    'min' => 0,
+                    'max' => 0,
+                ],
+                'duration' => [
+                    'sum' => 0,
+                    'avg' => 0,
+                    'min' => 0,
+                    'max' => 0,
+                ],
+            ];
+        }
+
+        $memory = memory_get_peak_usage();
+        $duration = (microtime(true) - $this->ConstructedTime) * 1000;
+
+        $cnt = $current['cnt'];
+        $memory_sum = $current['memory']['sum'];
+        $memory_avg = $current['memory']['avg'];
+        $memory_min = $current['memory']['min'];
+        $memory_max = $current['memory']['max'];
+        $duration_sum = $current['duration']['sum'];
+        $duration_avg = $current['duration']['avg'];
+        $duration_min = $current['duration']['min'];
+        $duration_max = $current['duration']['max'];
+
+        $cnt++;
+        $memory_sum += $memory;
+        $memory_avg = $memory_sum / $cnt;
+        if ($memory_min === false || $memory_min > $memory) {
+            $memory_min = $memory;
+        }
+        if ($memory_max === false || $memory_max < $memory) {
+            $memory_max = $memory;
+        }
+        $duration_sum += $duration;
+        $duration_avg = $duration_sum / $cnt;
+        if ($duration_min === false || $duration_min > $duration) {
+            $duration_min = $duration;
+        }
+        if ($duration_max === false || $duration_max < $duration) {
+            $duration_max = $duration;
+        }
+
+        $stats = [
+            'current' => [
+                'date'    => $cur_date,
+                'cnt'     => $cnt,
+                'memory'  => [
+                    'sum' => $memory_sum,
+                    'avg' => $memory_avg,
+                    'min' => $memory_min,
+                    'max' => $memory_max,
+                ],
+                'duration' => [
+                    'sum' => $duration_sum,
+                    'avg' => $duration_avg,
+                    'min' => $duration_min,
+                    'max' => $duration_max,
+                ],
+            ],
+            'daily' => $daily,
+        ];
+
+        $s = 'resource info (today): ' .
+            'memory=' . $this->size2str((int) $memory) .
+            ' (' .
+            'Ø ' . $this->size2str((int) $memory_avg) .
+            ' [' .
+            $this->size2str((int) $memory_min) .
+            '...' .
+            $this->size2str((int) $memory_max) .
+            ']), ' .
+            'duration=' . number_format($duration, 2) . 'ms' .
+            ' (' .
+            'Ø ' . number_format($duration_avg, 2) . 'ms' .
+            ' [' .
+            number_format($duration_min, 2) . 'ms' .
+            '...' .
+            number_format($duration_max, 2) . 'ms' .
+            ']), ' .
+            'count=' . $cnt;
+        $this->SendDebug(__FUNCTION__, $s, 0);
+
+        $this->WriteAttributeString('ModuleStats', json_encode($stats));
     }
 }
