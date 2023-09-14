@@ -867,6 +867,73 @@ trait StubsCommonLib
                     'type'    => 'Label',
                     'caption' => '',
                 ],
+                [
+                    'type'     => 'List',
+                    'name'     => 'InstanceInfo_Resources',
+                    'columns'  => [
+                        [
+                            'name'     => 'date',
+                            'width'    => '120px',
+                            'caption'  => 'Date',
+                        ],
+                        [
+                            'name'     => 'cnt',
+                            'width'    => '150px',
+                            'caption'  => 'Call count',
+                        ],
+                        [
+                            'name'     => '',
+                            'width'    => '75px',
+                            'caption'  => 'Memory:',
+                        ],
+                        [
+                            'name'     => 'memory_avg',
+                            'width'    => '100px',
+                            'caption'  => 'Average',
+                        ],
+                        [
+                            'name'     => 'memory_min',
+                            'width'    => '100px',
+                            'caption'  => 'Min',
+                        ],
+                        [
+                            'name'     => 'memory_max',
+                            'width'    => '100px',
+                            'caption'  => 'Max',
+                        ],
+                        [
+                            'name'     => '',
+                            'width'    => '75px',
+                            'caption'  => 'Duration:',
+                        ],
+                        [
+                            'name'     => 'duration_avg',
+                            'width'    => '100px',
+                            'caption'  => 'Average',
+                        ],
+                        [
+                            'name'     => 'duration_min',
+                            'width'    => '100px',
+                            'caption'  => 'Min',
+                        ],
+                        [
+                            'name'     => 'duration_max',
+                            'width'    => '100px',
+                            'caption'  => 'Max',
+                        ],
+                    ],
+                    'add'      => false,
+                    'delete'   => false,
+                    'rowCount' => 0,
+                    'values'   => [],
+                    'caption'  => 'Resource usage',
+                ],
+
+                [
+                    'type'    => 'Button',
+                    'caption' => 'Refresh panel',
+                    'onClick' => 'IPS_RequestAction($id, "UpdateFormData", json_encode(["area" => "InstanceInfo_Resources"]));',
+                ],
             ],
             'expanded' => false,
             'onClick'  => 'IPS_RequestAction($id, "UpdateFormData", json_encode(["area" => "InstanceInfo"]));',
@@ -1475,6 +1542,43 @@ trait StubsCommonLib
                         case 'InstanceInfo':
                             $s = $this->InstanceInfo($this->InstanceID);
                             $this->UpdateFormField('InstanceInfo', 'caption', $s);
+                            // no break
+                        case 'InstanceInfo_Resources':
+                            $values = [];
+
+                            @$stats = $this->ReadAttributeString('ModuleStats');
+                            @$stats = json_decode($stats, true);
+                            if ($stats == false) {
+                                $stats = [];
+                            }
+
+                            $current = isset($stats['current']) ? $stats['current'] : [];
+                            $values[] = [
+                                'date'         => $this->Translate('today'),
+                                'cnt'          => (int) $this->GetArrayElem($current, 'cnt', 0),
+                                'memory_avg'   => $this->size2str((int) $this->GetArrayElem($current, 'memory.avg', 0)),
+                                'memory_min'   => $this->size2str((int) $this->GetArrayElem($current, 'memory.min', 0)),
+                                'memory_max'   => $this->size2str((int) $this->GetArrayElem($current, 'memory.max', 0)),
+                                'duration_avg' => number_format($this->GetArrayElem($current, 'duration.avg', 0), 2) . 'ms',
+                                'duration_min' => number_format($this->GetArrayElem($current, 'duration.min', 0), 2) . 'ms',
+                                'duration_max' => number_format($this->GetArrayElem($current, 'duration.max', 0), 2) . 'ms',
+                            ];
+
+                            $daily = isset($stats['daily']) ? $stats['daily'] : [];
+                            foreach (array_reverse($daily) as $day) {
+                                $values[] = [
+                                    'date'         => date('d.m.Y', $day['date']),
+                                    'cnt'          => (int) $this->GetArrayElem($day, 'cnt', 0),
+                                    'memory_avg'   => $this->size2str((int) $this->GetArrayElem($day, 'memory.avg', 0)),
+                                    'memory_min'   => $this->size2str((int) $this->GetArrayElem($day, 'memory.min', 0)),
+                                    'memory_max'   => $this->size2str((int) $this->GetArrayElem($day, 'memory.max', 0)),
+                                    'duration_avg' => number_format($this->GetArrayElem($day, 'duration.avg', 0), 2) . 'ms',
+                                    'duration_min' => number_format($this->GetArrayElem($day, 'duration.min', 0), 2) . 'ms',
+                                    'duration_max' => number_format($this->GetArrayElem($day, 'duration.max', 0), 2) . 'ms',
+                                ];
+                            }
+                            $this->UpdateFormField('InstanceInfo_Resources', 'values', json_encode($values));
+                            $this->UpdateFormField('InstanceInfo_Resources', 'rowCount', count($values) > 0 ? count($values) : 1);
                             break;
                         default:
                             $this->SendDebug(__FUNCTION__, 'unsupported area ' . $jparams['area'], 0);
@@ -2737,15 +2841,15 @@ trait StubsCommonLib
         $current = isset($stats['current']) ? $stats['current'] : [];
         $daily = isset($stats['daily']) ? $stats['daily'] : [];
 
-        $cnt = isset($current['cnt']) ? $current['cnt'] : 0;
-        $memory_sum = isset($current['memory']['sum']) ? $current['memory']['sum'] : 0;
-        $memory_avg = isset($current['memory']['avg']) ? $current['memory']['avg'] : 0;
-        $memory_min = isset($current['memory']['min']) ? $current['memory']['min'] : 0;
-        $memory_max = isset($current['memory']['max']) ? $current['memory']['max'] : 0;
-        $duration_sum = isset($current['memory']['sum']) ? $current['duration']['sum'] : 0;
-        $duration_avg = isset($current['memory']['avg']) ? $current['duration']['avg'] : 0;
-        $duration_min = isset($current['memory']['min']) ? $current['duration']['min'] : 0;
-        $duration_max = isset($current['memory']['max']) ? $current['duration']['max'] : 0;
+        $cnt = (int) $this->GetArrayElem($current, 'cnt', 0);
+        $memory_sum = (int) $this->GetArrayElem($current, 'memory.sum', 0);
+        $memory_avg = (int) $this->GetArrayElem($current, 'memory.avg', 0);
+        $memory_min = (int) $this->GetArrayElem($current, 'memory.min', 0);
+        $memory_max = (int) $this->GetArrayElem($current, 'memory.max', 0);
+        $duration_sum = (int) $this->GetArrayElem($current, 'duration.sum', 0);
+        $duration_avg = (int) $this->GetArrayElem($current, 'duration.avg', 0);
+        $duration_min = (int) $this->GetArrayElem($current, 'duration.min', 0);
+        $duration_max = (int) $this->GetArrayElem($current, 'duration.max', 0);
 
         if (isset($current['date']) && $current['date'] != $cur_date) {
             $daily[] = [

@@ -94,6 +94,16 @@
 			"minute": "Minute",
 			"second": "Sekunde",
 
+			"Resource usage": "Resourcenverbrauch",
+			"Date": "Datum",
+			"today": "heute",
+			"Call count": "Anzahl Aufrufe",
+			"Memory:": "Speicher:",
+			"Duration:": "Laufzeit:",
+			"Average": "Mittelwert",
+			"Min": "Minimum",
+			"Max": "Maximum",
+
 			"__actions__": "ClearApiCallStats",
 			"Clear API call statistics": "API-Aufrufstatistik löschen",
 

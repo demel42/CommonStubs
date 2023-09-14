@@ -145,6 +145,9 @@ dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, arra
 `void WriteDataCache(array $dataCache, int $dataTstamp)`<br>
 `array GetRefreshDataCacheFormAction()`<br>
 
+`void CommonConstruct(string $dir)`<br>
+`void CommonDestruct()`<br>
+
 Definierte Konstanten
 ```
 IS_INVALIDPREREQUISITES
