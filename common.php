@@ -873,52 +873,52 @@ trait StubsCommonLib
                     'columns'  => [
                         [
                             'name'     => 'date',
-                            'width'    => '120px',
+                            'width'    => '90px',
                             'caption'  => 'Date',
                         ],
                         [
                             'name'     => 'cnt',
-                            'width'    => '150px',
+                            'width'    => '100px',
                             'caption'  => 'Call count',
                         ],
                         [
                             'name'     => '',
-                            'width'    => '75px',
+                            'width'    => '70px',
                             'caption'  => 'Memory:',
                         ],
                         [
                             'name'     => 'memory_avg',
-                            'width'    => '100px',
+                            'width'    => '90px',
                             'caption'  => 'Average',
                         ],
                         [
                             'name'     => 'memory_min',
-                            'width'    => '100px',
+                            'width'    => '90px',
                             'caption'  => 'Min',
                         ],
                         [
                             'name'     => 'memory_max',
-                            'width'    => '100px',
+                            'width'    => '90px',
                             'caption'  => 'Max',
                         ],
                         [
                             'name'     => '',
-                            'width'    => '75px',
+                            'width'    => '70px',
                             'caption'  => 'Duration:',
                         ],
                         [
                             'name'     => 'duration_avg',
-                            'width'    => '100px',
+                            'width'    => '90px',
                             'caption'  => 'Average',
                         ],
                         [
                             'name'     => 'duration_min',
-                            'width'    => '100px',
+                            'width'    => '90px',
                             'caption'  => 'Min',
                         ],
                         [
                             'name'     => 'duration_max',
-                            'width'    => '100px',
+                            'width'    => '90px',
                             'caption'  => 'Max',
                         ],
                     ],
