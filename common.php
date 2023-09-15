@@ -878,12 +878,12 @@ trait StubsCommonLib
                         ],
                         [
                             'name'     => 'cnt',
-                            'width'    => '100px',
+                            'width'    => '120px',
                             'caption'  => 'Call count',
                         ],
                         [
                             'name'     => '',
-                            'width'    => '70px',
+                            'width'    => '80px',
                             'caption'  => 'Memory:',
                         ],
                         [
@@ -903,7 +903,7 @@ trait StubsCommonLib
                         ],
                         [
                             'name'     => '',
-                            'width'    => '70px',
+                            'width'    => '80px',
                             'caption'  => 'Duration:',
                         ],
                         [
