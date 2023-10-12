@@ -2440,14 +2440,21 @@ trait StubsCommonLib
 
     private function ApiCallsCollect(string $url, string $err, int $statuscode)
     {
+        $uri = '';
+        $host = '';
+        $cmd = '';
         if (preg_match('!(^[^:]*://([^@]*@|)([^?]*|.*)|([^@]*@|)([^?]*|.*))!', $url, $r) && count($r)) {
             $uri = $r[count($r) - 1];
-        } else {
-            $uri = '';
+            if (preg_match('!(^[^/]*)[/]*(.*)!', $uri, $r) && count($r) >= 2) {
+                $host = $r[1];
+                $r = explode('/', $r[2]);
+                if (count($r) >= 1) {
+                    $cmd = $r[count($r) - 1];
+                }
+            }
         }
 
         $callerID = isset($_IPS['CallerID']) ? $_IPS['CallerID'] : $this->InstanceID;
-        // $this->SendDebug(__FUNCTION__, 'caller=' . $callerID . '(' . IPS_GetName($callerID) . '), uri=' . $uri . ', err=' . $err . ', statuscode=' . $statuscode, 0);
 
         $now = time();
 
@@ -2487,6 +2494,12 @@ trait StubsCommonLib
         $entries = (array) $this->GetArrayElem($stats, 'entries', []);
         $entries_new = [];
 
+        foreach ($entries as $entry) {
+            if (isset($entry['uri'])) {
+                $entries = [];
+            }
+        }
+
         $b = false;
         foreach ($entries as $entry) {
             if ($month_ref_tstamp != $month_tstamp) {
@@ -2501,7 +2514,8 @@ trait StubsCommonLib
                 $entry['last_hour'] = (int) $this->GetArrayElem($entry, 'hour', 0);
                 $entry['hour'] = 0;
             }
-            if ($entry['uri'] == $uri && $entry['err'] == $err && $entry['callerID'] == $callerID) {
+
+            if ($entry['host'] == $host && $entry['cmd'] == $cmd && $entry['err'] == $err && $entry['callerID'] == $callerID) {
                 $entry['total'] = $entry['total'] + 1;
                 $entry['month'] = $entry['month'] + 1;
                 $entry['day'] = $entry['day'] + 1;
@@ -2514,7 +2528,8 @@ trait StubsCommonLib
         if ($b == false) {
             $entry = [
                 'callerID'   => $callerID,
-                'uri'        => $uri,
+                'host'       => $host,
+                'cmd'        => $cmd,
                 'err'        => $err,
                 'total'      => 1,
                 'month'      => 1,
@@ -2529,6 +2544,7 @@ trait StubsCommonLib
 
         $stats_new['entries'] = $entries_new;
 
+        // $this->SendDebug(__FUNCTION__, 'ApiCalls with ' . count($stats_new['entries']) . ' entries, size=' . $this->size2str(strlen(json_encode($stats_new))), 0);
         // $this->SendDebug(__FUNCTION__, 'ApiCalls=' . print_r($stats_new, true), 0);
 
         $this->WriteAttributeString('ApiCallStats', json_encode($stats_new));
