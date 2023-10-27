@@ -120,6 +120,7 @@ dazu bei Bedarf in module.php: `array CheckModuleConfiguration()`<br>
 
 `int version2num(string $version)`<br>
 `string version2str(array $info)`<br>
+`array GetModuleVersion()`<br>
 
 `string CheckUpdate()`<br>
 dazu bei Bedarf in module.php: `string CheckModuleUpdate(array $oldInfo, array $newInfo)`<br>

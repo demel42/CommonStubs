@@ -2027,6 +2027,25 @@ trait StubsCommonLib
         return $s;
     }
 
+    private function GetModuleVersion()
+    {
+        @$updateInfo = $this->ReadAttributeString('UpdateInfo');
+        $oldInfo = json_decode($updateInfo != false ? $updateInfo : '', true);
+        if ($oldInfo == false) {
+            $inst = IPS_GetInstance($this->InstanceID);
+            $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
+            $lib = IPS_GetLibrary($mod['LibraryID']);
+            $oldInfo = [
+                'Version' => $lib['Version'],
+                'Build'   => $lib['Build'],
+                'Date'    => $lib['Date'],
+                'tstamp'  => time(),
+            ];
+        }
+        $oldVersion = $this->version2str($oldInfo);
+        return $oldVersion;
+    }
+
     private function CheckUpdate()
     {
         $inst = IPS_GetInstance($this->InstanceID);
