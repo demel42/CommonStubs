@@ -417,17 +417,17 @@ trait StubsCommonLib
         return $s;
     }
 
-    public function bit_set($val, $bit)
+    public function bit_set(int $val, int $bit)
     {
         return $val | (1 << $bit);
     }
 
-    public function bit_clear($val, $bit)
+    public function bit_clear(int $val, int $bit)
     {
         return $val & ~(1 << $bit);
     }
 
-    public function bit_test($val, $bit)
+    public function bit_test(int $val, int $bit)
     {
         return ($val & (1 << $bit)) == (1 << $bit);
     }
