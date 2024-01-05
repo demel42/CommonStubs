@@ -399,22 +399,37 @@ trait StubsCommonLib
         return $duration;
     }
 
-    private function int2bitmap(int $val, int $n)
-    {
-        $s = '';
-        for ($i = $n - 1; $i >= 0; $i--) {
-            $x = 1 << $i;
-            $s .= ($val & $x) == $x ? '1' : '0';
-        }
-        return $s;
-    }
-
     private function size2str(int $size)
     {
         $unit = ['B', 'K', 'M', 'G', 'T', 'P'];
         $s = @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $unit[$i];
 
         return $s;
+    }
+
+    public function bitmap2str(int $val, int $num)
+    {
+        $s = '';
+        for ($i = $num - 1; $i >= 0; $i--) {
+            $x = 1 << $i;
+            $s .= ($val & $x) == $x ? '1' : '0';
+        }
+        return $s;
+    }
+
+    public function bit_set($val, $bit)
+    {
+        return $val | (1 << $bit);
+    }
+
+    public function bit_clear($val, $bit)
+    {
+        return $val & ~(1 << $bit);
+    }
+
+    public function bit_test($val, $bit)
+    {
+        return ($val & (1 << $bit)) == (1 << $bit);
     }
 
     private function format_float(float $number, int $dec_points = -1)
