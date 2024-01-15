@@ -112,6 +112,9 @@
 				"Zur Vermeidung von API-Limitierungen werden Konfigurator-Daten nur alle ${expires_in} (zuletzt: ${tstamp}) abgefragt",
 			"Refresh cache": "Cache aktualisieren",
 
+			"__media__": "",
+			"ApiCallStats": "API-Aufruf-Statistkdaten",
+
 			"__status__": "Status",
 			"Instance getting created": "Instanz wird erstellt",
 			"Instance is active": "Instanz ist aktiv",

@@ -407,7 +407,7 @@ trait StubsCommonLib
         return $s;
     }
 
-    public function bitmap2str(int $val, int $num)
+    private function bitmap2str(int $val, int $num)
     {
         $s = '';
         for ($i = $num - 1; $i >= 0; $i--) {
@@ -417,17 +417,17 @@ trait StubsCommonLib
         return $s;
     }
 
-    public function bit_set(int $val, int $bit)
+    private function bit_set(int $val, int $bit)
     {
         return $val | (1 << $bit);
     }
 
-    public function bit_clear(int $val, int $bit)
+    private function bit_clear(int $val, int $bit)
     {
         return $val & ~(1 << $bit);
     }
 
-    public function bit_test(int $val, int $bit)
+    private function bit_test(int $val, int $bit)
     {
         return ($val & (1 << $bit)) == (1 << $bit);
     }
@@ -1558,6 +1558,7 @@ trait StubsCommonLib
                             $s = $this->InstanceInfo($this->InstanceID);
                             $this->UpdateFormField('InstanceInfo', 'caption', $s);
                             // no break
+                            // FIXME: No break. Please add proper comment if intentional
                         case 'InstanceInfo_Resources':
                             $values = [];
 
@@ -2454,13 +2455,25 @@ trait StubsCommonLib
         return true;
     }
 
-    private function ApiCallsSetInfo(array $limits, string $notes)
+    private function ReadApiallStats()
     {
-        @$stats = $this->ReadAttributeString('ApiCallStats');
-        if ($stats == false) {
-            return;
+        $s = $this->GetMediaData('ApiCallStats');
+        if ($s == false) {
+            return false;
         }
-        @$stats = json_decode($stats, true);
+        @$stats = json_decode($s, true);
+        return $stats;
+    }
+
+    private function WriteApiCallStats($stats)
+    {
+        $s = json_encode($stats, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $this->SetMediaData('ApiCallStats', $s, MEDIATYPE_DOCUMENT, '.txt', false);
+    }
+
+    private function ApiCallSetInfo(array $limits, string $notes)
+    {
+        $stats = $this->ReadApiallStats();
         if ($stats == false) {
             $stats = [
                 'tstamps' => [],
@@ -2469,10 +2482,10 @@ trait StubsCommonLib
         }
         $stats['limits'] = $limits;
         $stats['notes'] = $notes;
-        $this->WriteAttributeString('ApiCallStats', json_encode($stats));
+        $this->WriteApiCallStats($stats);
     }
 
-    private function ApiCallsCollect(string $url, string $err, int $statuscode)
+    private function ApiCallCollect(string $url, string $err, int $statuscode)
     {
         $uri = '';
         $host = '';
@@ -2492,12 +2505,7 @@ trait StubsCommonLib
 
         $now = time();
 
-        @$stats = $this->ReadAttributeString('ApiCallStats');
-        if ($stats == false) {
-            return;
-        }
-
-        @$stats = json_decode($stats, true);
+        $stats = $this->ReadApiallStats();
         if ($stats == false) {
             $stats = [];
         }
@@ -2578,10 +2586,7 @@ trait StubsCommonLib
 
         $stats_new['entries'] = $entries_new;
 
-        // $this->SendDebug(__FUNCTION__, 'ApiCalls with ' . count($stats_new['entries']) . ' entries, size=' . $this->size2str(strlen(json_encode($stats_new))), 0);
-        // $this->SendDebug(__FUNCTION__, 'ApiCalls=' . print_r($stats_new, true), 0);
-
-        $this->WriteAttributeString('ApiCallStats', json_encode($stats_new));
+        $this->WriteApiCallStats($stats_new);
     }
 
     private function GetApiCallStatsFormItem()
@@ -2633,12 +2638,7 @@ trait StubsCommonLib
 
     private function ShowApiCallStats()
     {
-        @$stats = $this->ReadAttributeString('ApiCallStats');
-        if ($stats == false) {
-            return;
-        }
-
-        @$stats = json_decode($stats, true);
+        $stats = $this->ReadApiallStats();
         if ($stats == false) {
             $msg = 'no collected data';
             $this->RequestAction('PopupMessage', $msg);
@@ -2743,7 +2743,7 @@ trait StubsCommonLib
 
     private function ClearApiCallStats()
     {
-        @$stats = $this->ReadAttributeString('ApiCallStats');
+        $stats = $this->ReadApiallStats();
         if ($stats == false) {
             return;
         }
@@ -2759,7 +2759,7 @@ trait StubsCommonLib
             'entries' => [],
             'limits'  => (array) $this->GetArrayElem($stats, 'limits', []),
         ];
-        $this->WriteAttributeString('ApiCallStats', json_encode($stats_new));
+        $this->WriteApiCallStats($stats_new);
     }
 
     private function SetupDataCache(int $expires_in)
