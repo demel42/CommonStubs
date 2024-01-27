@@ -1294,7 +1294,10 @@ trait StubsCommonLib
         // Instanz referenziert durch
         $referencedBy = [];
         if (count($ucIDs) > 0) {
-            $refs = UC_FindReferences($ucIDs[0], $instID);
+            @$refs = UC_FindReferences($ucIDs[0], $instID);
+            if ($refs == false) {
+                $refs = [];
+            }
             foreach ($refs as $ref) {
                 $objID = $ref['ObjectID'];
                 if (IPS_ObjectExists($objID) == false) {
@@ -1396,7 +1399,10 @@ trait StubsCommonLib
                 $varIdent = $obj['ObjectIdent'];
                 $varName = IPS_GetName($objID);
 
-                $refs = UC_FindReferences($ucIDs[0], $objID);
+                @$refs = UC_FindReferences($ucIDs[0], $objID);
+                if ($refs == false) {
+                    $refs = [];
+                }
                 foreach ($refs as $ref) {
                     $chldID = $ref['ObjectID'];
                     $chld = IPS_GetObject($chldID);
@@ -1558,7 +1564,6 @@ trait StubsCommonLib
                             $s = $this->InstanceInfo($this->InstanceID);
                             $this->UpdateFormField('InstanceInfo', 'caption', $s);
                             // no break
-                            // FIXME: No break. Please add proper comment if intentional
                         case 'InstanceInfo_Resources':
                             $values = [];
 
