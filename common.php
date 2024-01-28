@@ -160,38 +160,57 @@ trait StubsCommonLib
         return $value;
     }
 
-    private function GetMediaData(string $ident)
+    private function MaintainMedia(string $ident, string $name, int $mediatyp, string $extension, bool $cached, int $position, bool $keep)
     {
-        $name = $this->Translate($ident);
         @$mediaID = IPS_GetMediaIDByName($name, $this->InstanceID);
-        if ($mediaID == false) {
-            $this->SendDebug(__FUNCTION__, 'missing media-object ' . $ident, 0);
-            return false;
-        }
-        $data = base64_decode(IPS_GetMediaContent($mediaID));
-        return $data;
-    }
-
-    private function SetMediaData(string $ident, string $data, int $mediatyp, string $extension, bool $cached)
-    {
-        $n = strlen(base64_encode($data));
-        $this->SendDebug(__FUNCTION__, 'write ' . $n . ' bytes to media-object ' . $ident, 0);
-        $name = $this->Translate($ident);
-        @$mediaID = IPS_GetMediaIDByName($name, $this->InstanceID);
-        if ($mediaID == false) {
-            $mediaID = IPS_CreateMedia($mediatyp);
-            if ($mediaID == false) {
-                $this->SendDebug(__FUNCTION__, 'unable to create media-object ' . $ident, 0);
-                return false;
+        if ($keep == false) {
+            if ($mediaID != false) {
+                if (IPS_DeleteMedia($mediaID, true) == false) {
+                    $this->SendDebug(__FUNCTION__, 'unable to delete media object ' . $ident, 0);
+                    return;
+                }
             }
-            $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
-            IPS_SetMediaFile($mediaID, $filename, false);
-            IPS_SetName($mediaID, $name);
-            IPS_SetParent($mediaID, $this->InstanceID);
-            $this->SendDebug(__FUNCTION__, 'media-object ' . $ident . ' created, filename=' . $filename, 0);
+        } else {
+            if ($mediaID == false) {
+                $mediaID = IPS_CreateMedia($mediatyp);
+                if ($mediaID == false) {
+                    $this->SendDebug(__FUNCTION__, 'unable to create media object ' . $ident, 0);
+                    return;
+                }
+                IPS_SetIdent($mediaID, $ident);
+                IPS_SetParent($mediaID, $this->InstanceID);
+                $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
+                IPS_SetMediaFile($mediaID, $filename, false);
+                IPS_SetName($mediaID, $this->Translate($name));
+                IPS_SetPosition($mediaID, $position);
+            }
         }
         IPS_SetMediaCached($mediaID, $cached);
-        IPS_SetMediaContent($mediaID, base64_encode($data));
+    }
+
+    private function SetMedia(string $ident, string $content)
+    {
+        @$mediaID = $this->GetIDForIdent($ident);
+        if ($mediaID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing media object ' . $ident, 0);
+            return;
+        }
+
+        $data = $content !== false ? base64_encode($content) : '';
+        IPS_SetMediaContent($mediaID, $data);
+    }
+
+    private function GetMedia(string $ident)
+    {
+        @$mediaID = $this->GetIDForIdent($ident);
+        if ($mediaID == false) {
+            $this->SendDebug(__FUNCTION__, 'missing media object ' . $ident, 0);
+            return false;
+        }
+
+        $data = IPS_GetMediaContent($mediaID);
+        $content = $data !== false ? base64_decode($data) : false;
+        return $content;
     }
 
     private function HookIsUsed(string $ident)
