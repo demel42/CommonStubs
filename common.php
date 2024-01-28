@@ -162,7 +162,7 @@ trait StubsCommonLib
 
     private function MaintainMedia(string $ident, string $name, int $mediatyp, string $extension, bool $cached, int $position, bool $keep)
     {
-        @$mediaID = IPS_GetMediaIDByName($name, $this->InstanceID);
+        @$mediaID = $this->GetIDForIdent($ident);
         if ($keep == false) {
             if ($mediaID != false) {
                 if (IPS_DeleteMedia($mediaID, true) == false) {
@@ -177,18 +177,19 @@ trait StubsCommonLib
                     $this->SendDebug(__FUNCTION__, 'unable to create media object ' . $ident, 0);
                     return;
                 }
-                IPS_SetIdent($mediaID, $ident);
                 IPS_SetParent($mediaID, $this->InstanceID);
+                IPS_SetIdent($mediaID, $ident);
                 $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
                 IPS_SetMediaFile($mediaID, $filename, false);
-                IPS_SetName($mediaID, $this->Translate($name));
+                IPS_SetName($mediaID, $name);
                 IPS_SetPosition($mediaID, $position);
+                IPS_SetMediaContent($mediaID, '');
             }
+            IPS_SetMediaCached($mediaID, $cached);
         }
-        IPS_SetMediaCached($mediaID, $cached);
     }
 
-    private function SetMedia(string $ident, string $content)
+    private function SetMediaContent(string $ident, string $content)
     {
         @$mediaID = $this->GetIDForIdent($ident);
         if ($mediaID == false) {
@@ -200,7 +201,7 @@ trait StubsCommonLib
         IPS_SetMediaContent($mediaID, $data);
     }
 
-    private function GetMedia(string $ident)
+    private function GetMediaContent(string $ident)
     {
         @$mediaID = $this->GetIDForIdent($ident);
         if ($mediaID == false) {
@@ -2479,9 +2480,9 @@ trait StubsCommonLib
         return true;
     }
 
-    private function ReadApiallStats()
+    private function ReadApiCallStats()
     {
-        $s = $this->GetMediaData('ApiCallStats');
+        $s = $this->GetMediaContent('ApiCallStats');
         if ($s == false) {
             return false;
         }
@@ -2492,12 +2493,12 @@ trait StubsCommonLib
     private function WriteApiCallStats($stats)
     {
         $s = json_encode($stats, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $this->SetMediaData('ApiCallStats', $s, MEDIATYPE_DOCUMENT, '.txt', false);
+        $this->SetMediaContent('ApiCallStats', $s);
     }
 
     private function ApiCallSetInfo(array $limits, string $notes)
     {
-        $stats = $this->ReadApiallStats();
+        $stats = $this->ReadApiCallStats();
         if ($stats == false) {
             $stats = [
                 'tstamps' => [],
@@ -2529,7 +2530,7 @@ trait StubsCommonLib
 
         $now = time();
 
-        $stats = $this->ReadApiallStats();
+        $stats = $this->ReadApiCallStats();
         if ($stats == false) {
             $stats = [];
         }
@@ -2662,7 +2663,7 @@ trait StubsCommonLib
 
     private function ShowApiCallStats()
     {
-        $stats = $this->ReadApiallStats();
+        $stats = $this->ReadApiCallStats();
         if ($stats == false) {
             $msg = 'no collected data';
             $this->RequestAction('PopupMessage', $msg);
@@ -2767,7 +2768,7 @@ trait StubsCommonLib
 
     private function ClearApiCallStats()
     {
-        $stats = $this->ReadApiallStats();
+        $stats = $this->ReadApiCallStats();
         if ($stats == false) {
             return;
         }

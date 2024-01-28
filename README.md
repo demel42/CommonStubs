@@ -22,8 +22,8 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 <br>
 
 `void MaintainMedia(string $ident, string $name, int $mediatyp, string $extension, bool $cached, int $position, bool $keep)`<br>
-`void SetMedia(string $ident, string $content)`<br>
-`string GetMedia(string $ident)`<br>
+`void SetMediaContent(string $ident, string $content)`<br>
+`string GetMediaContent(string $ident)`<br>
 <br>
 
 `bool HookIsUsed(string $ident)`<br>
