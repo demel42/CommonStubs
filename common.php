@@ -171,6 +171,13 @@ trait StubsCommonLib
                 }
             }
         } else {
+            $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
+            if ($mediaID == false) {
+                @$mediaID = IPS_GetMediaIDByFile($filename);
+                if ($mediaID != false) {
+                    IPS_SetIdent($mediaID, $ident);
+                }
+            }
             if ($mediaID == false) {
                 $mediaID = IPS_CreateMedia($mediatyp);
                 if ($mediaID == false) {
@@ -179,7 +186,6 @@ trait StubsCommonLib
                 }
                 IPS_SetParent($mediaID, $this->InstanceID);
                 IPS_SetIdent($mediaID, $ident);
-                $filename = 'media' . DIRECTORY_SEPARATOR . $this->InstanceID . '-' . $ident . $extension;
                 IPS_SetMediaFile($mediaID, $filename, false);
                 IPS_SetName($mediaID, $name);
                 IPS_SetPosition($mediaID, $position);
