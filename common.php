@@ -215,7 +215,7 @@ trait StubsCommonLib
             return false;
         }
 
-        $data = IPS_GetMediaContent($mediaID);
+        $data = @IPS_GetMediaContent($mediaID);
         $content = $data !== false ? base64_decode($data) : false;
         return $content;
     }
