@@ -189,7 +189,9 @@ trait StubsCommonLib
                 IPS_SetMediaFile($mediaID, $filename, false);
                 IPS_SetName($mediaID, $name);
                 IPS_SetPosition($mediaID, $position);
-                IPS_SetMediaContent($mediaID, '');
+                if (IPS_GetMedia($mediaID)['MediaIsAvailable'] == false) {
+                    IPS_SetMediaContent($mediaID, '');
+                }
             }
             IPS_SetMediaCached($mediaID, $cached);
         }
@@ -205,6 +207,7 @@ trait StubsCommonLib
 
         $data = $content !== false ? base64_encode($content) : '';
         IPS_SetMediaContent($mediaID, $data);
+        IPS_SendMediaEvent($mediaID);
     }
 
     private function GetMediaContent(string $ident)
@@ -702,10 +705,21 @@ trait StubsCommonLib
     {
         $ids = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}'); // Location Control
         if (count($ids) > 0) {
-            return json_decode(IPS_GetProperty($ids[0], 'Location'), true);
+            if (IPS_GetKernelVersion() < 5.0) {
+                $location = [
+                    'latitude'  => IPS_GetProperty($ids[0], 'Latitude'),
+                    'longitude' => IPS_GetProperty($ids[0], 'Longitude'),
+                ];
+            } else {
+                $location = json_decode(IPS_GetProperty($ids[0], 'Location'), true);
+            }
         } else {
-            return ['latitude' => 0, 'longitude' => 0];
+            $location = [
+                'latitude'  => 0,
+                'longitude' => 0,
+            ];
         }
+        return $location;
     }
 
     private function GetConfiguratorLocation(int $catID)
