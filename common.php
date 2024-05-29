@@ -2912,7 +2912,7 @@ trait StubsCommonLib
     private $ModuleDir;
     private $ConstructedTime;
 
-    private function CommonContruct($dir)
+    private function CommonConstruct($dir)
     {
         $this->ModuleDir = $dir;
         $this->ConstructedTime = microtime(true);
