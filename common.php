@@ -1108,7 +1108,7 @@ trait StubsCommonLib
 
     private function IsValidID($id)
     {
-        return $id >= 10000 && <= 59999;
+        return $id >= 10000 && $id <= 59999;
     }
 
     private function MaintainReferences(array $propertyNames = null)
