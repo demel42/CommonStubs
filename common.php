@@ -1011,7 +1011,7 @@ trait StubsCommonLib
         $map = [
             SCRIPTTYPE_PHP         => 'PHP script',
             SCRIPTTYPE_FLOW        => 'Flow plan',
-            SCRIPTTYPE_IPSWORKFLOW => 'IPSWorkflow',
+            SCRIPTTYPE_IPSWORKFLOW => 'Logic plan',
         ];
 
         if (isset($map[$scriptType])) {
@@ -1108,7 +1108,7 @@ trait StubsCommonLib
 
     private function IsValidID($id)
     {
-        return $id >= 10000;
+        return $id >= 10000 && <= 59999;
     }
 
     private function MaintainReferences(array $propertyNames = null)
