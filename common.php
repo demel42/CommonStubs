@@ -1608,7 +1608,7 @@ trait StubsCommonLib
                             $values = [];
 
                             @$stats = $this->ReadAttributeString('ModuleStats');
-                            @$stats = json_decode($stats, true);
+                            @$stats = json_decode((string) $stats, true);
                             if ($stats == false) {
                                 $stats = [];
                             }
@@ -2790,10 +2790,8 @@ trait StubsCommonLib
     {
         $stats = $this->ReadApiCallStats();
         if ($stats == false) {
-            return;
+            $stats = [];
         }
-
-        @$stats = json_decode($stats, true);
         $stats_new = [
             'tstamps' => [
                 'total' => 0,
