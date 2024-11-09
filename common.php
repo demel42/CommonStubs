@@ -812,6 +812,66 @@ trait StubsCommonLib
         return $txt;
     }
 
+    private function GetModuleInfo(int $instID)
+    {
+        $obj = IPS_GetObject($instID);
+        $inst = IPS_GetInstance($instID);
+        $mod = IPS_GetModule($inst['ModuleInfo']['ModuleID']);
+        $lib = IPS_GetLibrary($mod['LibraryID']);
+
+        $info = [
+            'ModuleName'  => $mod['ModuleName'],
+            'ModuleID'    => $mod['ModuleID'],
+            'LibraryName' => $lib['Name'],
+            'LibraryID'   => $lib['LibraryID'],
+            'Version'     => $lib['Version'],
+            'Build'       => $lib['Build'],
+            'Date'        => $lib['Date'],
+        ];
+
+        $scIDs = IPS_GetInstanceListByModuleID('{F45B5D1F-56AE-4C61-9AB2-C87C63149EC3}'); // Store Control
+        if (count($scIDs) > 0) {
+            $scList = SC_GetModuleInfoList($scIDs[0]);
+            foreach ($scList as $sc) {
+                if ($sc['LibraryID'] == $lib['LibraryID']) {
+                    $info['Source'] = 'ModuleStore';
+                    switch ($sc['Channel']) {
+                        case 1:
+                            $info['Channel'] = 'Beta';
+                            break;
+                        case 2:
+                            $info['Channel'] = 'Testing';
+                            break;
+                        default:
+                            $info['Channel'] = 'Stable';
+                            break;
+                    }
+                    break;
+                }
+            }
+        }
+        $mcIDs = IPS_GetInstanceListByModuleID('{B8A5067A-AFC2-3798-FEDC-BCD02A45615E}'); // Module Control
+        if (count($mcIDs) > 0) {
+            $mcList = MC_GetModuleList($mcIDs[0]);
+            foreach ($mcList as $mc) {
+                @$g = MC_GetModule($mcIDs[0], $mc);
+                if ($g == false) {
+                    continue;
+                }
+                if ($g['LibraryID'] == $lib['LibraryID']) {
+                    @$r = MC_GetModuleRepositoryInfo($mcIDs[0], $mc);
+                    if ($r == false) {
+                        continue;
+                    }
+                    $info['Source'] = 'Git';
+                    $info['Branch'] = $r['ModuleBranch'];
+                    break;
+                }
+            }
+        }
+        return $info;
+    }
+
     private function InstanceInfo(int $instID)
     {
         $obj = IPS_GetObject($instID);

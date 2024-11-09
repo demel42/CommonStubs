@@ -89,6 +89,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 
 `array GetInstallVarProfilesFormItem()`<br>
 
+`array GetModuleInfo(int $instID)`<br>
 `string InstanceInfo(int $instID)`<br>
 `array GetInformationFormAction()`<br>
 
