@@ -2095,7 +2095,11 @@ trait StubsCommonLib
                 if ($timer['Running']) {
                     $ts = time() + ($timer['Interval'] / 1000);
                 }
-                $s .= ', next=' . date('H:i:s', $ts);
+                if (date('d.m.Y', $ts) == date('d.m.Y')) {
+                    $s .= ', next=' . date('H:i:s', $ts);
+                } else {
+                    $s .= ', next=' . date('d.m.y H:i:s', $ts);
+                }
             }
         }
         return $s;
