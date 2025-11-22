@@ -1588,7 +1588,10 @@ trait StubsCommonLib
         $referencedTimer = [];
         $timerList = IPS_GetTimerList();
         foreach ($timerList as $t) {
-            $timer = IPS_GetTimer($t);
+            @$timer = IPS_GetTimer($t);
+            if ($timer == false) {
+                continue;
+            }
             if ($timer['InstanceID'] != $this->InstanceID) {
                 continue;
             }
@@ -2069,7 +2072,10 @@ trait StubsCommonLib
     {
         $timerList = IPS_GetTimerList();
         foreach ($timerList as $t) {
-            $timer = IPS_GetTimer($t);
+            @$timer = IPS_GetTimer($t);
+            if ($timer == false) {
+                continue;
+            }
             if ($timer['InstanceID'] == $this->InstanceID && $timer['Name'] == $name) {
                 return $timer;
             }
