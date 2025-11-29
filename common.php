@@ -3123,4 +3123,29 @@ trait StubsCommonLib
 
         $this->WriteAttributeString('ModuleStats', json_encode($stats));
     }
+
+    private function RegexpPattern(string $type, bool $add_empty)
+    {
+        $patternV = [
+            'empty' => '^$',
+            'hook'  => '^/hook/[-a-zA-Z0-9_]+$',
+            'ip'    => '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$',
+            'mail'  => '^[a-zA-z0-9.-]+\@[a-zA-z0-9.-]+.[a-zA-Z]+.$',
+            'telno' => '^((\\+|00)[1-9]\\d{0,3}|0 ?[1-9]|\\(00? ?[1-9][\\d ]*\\))[\\d\\-/ ]*$',
+        ];
+
+        $pattern = false;
+        if ($type != '') {
+            $type = strtolower($type);
+            if (isset($patternV[$type])) {
+                $pattern = $patternV[$type];
+                if ($add_empty) {
+                    $pattern .= '|^$';
+                }
+            } else {
+                $this->SendDebug(__FUNCTION__, 'pattern "$type" not found', 0);
+            }
+        }
+        return $pattern;
+    }
 }

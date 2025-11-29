@@ -154,6 +154,8 @@ dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, arra
 `void CommonConstruct(string $dir)`<br>
 `void CommonDestruct()`<br>
 
+`string RegexpPattern(string $type, bool $add_empty)`<br>
+
 Definierte Konstanten
 ```
 IS_INVALIDPREREQUISITES
