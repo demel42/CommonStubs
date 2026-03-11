@@ -430,8 +430,14 @@ trait StubsCommonLib
 
     private function size2str(int $size)
     {
-        $unit = ['B', 'K', 'M', 'G', 'T', 'P'];
-        $s = @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $unit[$i];
+        if ($size < 0) {
+            $s = '';
+        } elseif ($size == 0) {
+            $s = '0';
+        } else {
+            $unit = ['B', 'K', 'M', 'G', 'T', 'P'];
+            $s = @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $unit[$i];
+        }
 
         return $s;
     }
@@ -3063,9 +3069,16 @@ trait StubsCommonLib
         $memory = memory_get_peak_usage();
         $duration = (microtime(true) - $this->ConstructedTime) * 1000;
 
+        // handle number overflow
+        if ($cnt < 0 || $memory_sum < 0 || $duration_sum < 0) {
+            $cnt = 0;
+            $memory_sum = 0;
+            $duration_sum = 0;
+        }
+
         $cnt++;
         $memory_sum += $memory;
-        $memory_avg = $memory_sum / $cnt;
+        $memory_avg = $memory_sum > 0 ? ($memory_sum / $cnt) : 0;
         if ($memory_min == 0 || $memory_min > $memory) {
             $memory_min = $memory;
         }
@@ -3073,7 +3086,7 @@ trait StubsCommonLib
             $memory_max = $memory;
         }
         $duration_sum += $duration;
-        $duration_avg = $duration_sum / $cnt;
+        $duration_avg = $duration_sum > 0 ? ($duration_sum / $cnt) : 0;
         if ($duration_min == 0 || $duration_min > $duration) {
             $duration_min = $duration;
         }
