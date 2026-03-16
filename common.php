@@ -1023,7 +1023,12 @@ trait StubsCommonLib
                         [
                             'name'     => 'cnt',
                             'width'    => '120px',
+                            'align'    => 'right',
                             'caption'  => 'Call count',
+                        ],
+                        [
+                            'name'     => '',
+                            'width'    => '40px',
                         ],
                         [
                             'name'     => '',
@@ -1044,6 +1049,10 @@ trait StubsCommonLib
                             'name'     => 'memory_max',
                             'width'    => '100px',
                             'caption'  => 'Max',
+                        ],
+                        [
+                            'name'     => '',
+                            'width'    => '40px',
                         ],
                         [
                             'name'     => '',
