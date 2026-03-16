@@ -449,7 +449,9 @@ trait StubsCommonLib
         } elseif ($msec == 0) {
             $s = '0ms';
         } else {
-            if ($msec >= 10000) {
+            if ($msec >= 100000) {
+                $s = number_format(($msec / 1000), 0) . 's';
+            } elseif ($msec >= 10000) {
                 $s = number_format(($msec / 1000), 1) . 's';
             } elseif ($msec >= 3000) {
                 $s = number_format(($msec / 1000), 2) . 's';
