@@ -433,10 +433,31 @@ trait StubsCommonLib
         if ($size < 0) {
             $s = '';
         } elseif ($size == 0) {
-            $s = '0';
+            $s = '0B';
         } else {
             $unit = ['B', 'K', 'M', 'G', 'T', 'P'];
-            $s = @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $unit[$i];
+            $s = @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ($i >= 0 && $i < count($unit) ? $unit[$i] : '');
+        }
+
+        return $s;
+    }
+
+    private function msec2str(int $msec)
+    {
+        if ($msec < 0) {
+            $s = '';
+        } elseif ($msec == 0) {
+            $s = '0ms';
+        } else {
+            if ($msec >= 10000) {
+                $s = number_format(($msec / 1000), 1) . 's';
+            } elseif ($msec >= 3000) {
+                $s = number_format(($msec / 1000), 2) . 's';
+            } elseif ($msec >= 1000) {
+                $s = number_format(($msec / 1000), 3) . 's';
+            } else {
+                $s = sprintf('%dms', $msec);
+            }
         }
 
         return $s;
@@ -1009,17 +1030,17 @@ trait StubsCommonLib
                         ],
                         [
                             'name'     => 'memory_avg',
-                            'width'    => '90px',
+                            'width'    => '100px',
                             'caption'  => 'Average',
                         ],
                         [
                             'name'     => 'memory_min',
-                            'width'    => '90px',
+                            'width'    => '100px',
                             'caption'  => 'Min',
                         ],
                         [
                             'name'     => 'memory_max',
-                            'width'    => '90px',
+                            'width'    => '100px',
                             'caption'  => 'Max',
                         ],
                         [
@@ -1029,17 +1050,17 @@ trait StubsCommonLib
                         ],
                         [
                             'name'     => 'duration_avg',
-                            'width'    => '90px',
+                            'width'    => '100px',
                             'caption'  => 'Average',
                         ],
                         [
                             'name'     => 'duration_min',
-                            'width'    => '90px',
+                            'width'    => '100px',
                             'caption'  => 'Min',
                         ],
                         [
                             'name'     => 'duration_max',
-                            'width'    => '90px',
+                            'width'    => '100px',
                             'caption'  => 'Max',
                         ],
                     ],
@@ -1689,9 +1710,9 @@ trait StubsCommonLib
                                 'memory_avg'   => $this->size2str((int) $this->GetArrayElem($current, 'memory.avg', 0)),
                                 'memory_min'   => $this->size2str((int) $this->GetArrayElem($current, 'memory.min', 0)),
                                 'memory_max'   => $this->size2str((int) $this->GetArrayElem($current, 'memory.max', 0)),
-                                'duration_avg' => number_format($this->GetArrayElem($current, 'duration.avg', 0), 2) . 'ms',
-                                'duration_min' => number_format($this->GetArrayElem($current, 'duration.min', 0), 2) . 'ms',
-                                'duration_max' => number_format($this->GetArrayElem($current, 'duration.max', 0), 2) . 'ms',
+                                'duration_avg' => $this->msec2str((int) $this->GetArrayElem($current, 'duration.avg', 0)),
+                                'duration_min' => $this->msec2str((int) $this->GetArrayElem($current, 'duration.min', 0)),
+                                'duration_max' => $this->msec2str((int) $this->GetArrayElem($current, 'duration.max', 0)),
                             ];
 
                             $daily = isset($stats['daily']) ? $stats['daily'] : [];
@@ -1702,9 +1723,9 @@ trait StubsCommonLib
                                     'memory_avg'   => $this->size2str((int) $this->GetArrayElem($day, 'memory.avg', 0)),
                                     'memory_min'   => $this->size2str((int) $this->GetArrayElem($day, 'memory.min', 0)),
                                     'memory_max'   => $this->size2str((int) $this->GetArrayElem($day, 'memory.max', 0)),
-                                    'duration_avg' => number_format($this->GetArrayElem($day, 'duration.avg', 0), 2) . 'ms',
-                                    'duration_min' => number_format($this->GetArrayElem($day, 'duration.min', 0), 2) . 'ms',
-                                    'duration_max' => number_format($this->GetArrayElem($day, 'duration.max', 0), 2) . 'ms',
+                                    'duration_avg' => $this->msec2str((int) $this->GetArrayElem($day, 'duration.avg', 0)),
+                                    'duration_min' => $this->msec2str((int) $this->GetArrayElem($day, 'duration.min', 0)),
+                                    'duration_max' => $this->msec2str((int) $this->GetArrayElem($day, 'duration.max', 0)),
                                 ];
                             }
                             $this->UpdateFormField('InstanceInfo_Resources', 'values', json_encode($values));
@@ -1731,6 +1752,10 @@ trait StubsCommonLib
                 break;
             case 'RefreshDataCache':
                 $this->RefreshDataCache();
+                $r = true;
+                break;
+            case 'ClearModuleStats':
+                $this->ClearModuleStats();
                 $r = true;
                 break;
             case 'PopupMessage':
@@ -3011,11 +3036,11 @@ trait StubsCommonLib
         $daily = isset($stats['daily']) ? $stats['daily'] : [];
 
         $cnt = (int) $this->GetArrayElem($current, 'cnt', 0);
-        $memory_sum = (int) $this->GetArrayElem($current, 'memory.sum', 0);
+        $memory_sum = (float) $this->GetArrayElem($current, 'memory.sum', 0);
         $memory_avg = (int) $this->GetArrayElem($current, 'memory.avg', 0);
         $memory_min = (int) $this->GetArrayElem($current, 'memory.min', 0);
         $memory_max = (int) $this->GetArrayElem($current, 'memory.max', 0);
-        $duration_sum = (int) $this->GetArrayElem($current, 'duration.sum', 0);
+        $duration_sum = (float) $this->GetArrayElem($current, 'duration.sum', 0);
         $duration_avg = (int) $this->GetArrayElem($current, 'duration.avg', 0);
         $duration_min = (int) $this->GetArrayElem($current, 'duration.min', 0);
         $duration_max = (int) $this->GetArrayElem($current, 'duration.max', 0);
@@ -3037,17 +3062,19 @@ trait StubsCommonLib
             ];
 
             $s = 'resource info (' . date('d.m.Y', $current['date']) . '): ' .
-            'memory Ø ' . $this->size2str((int) $memory_avg) .
+            'memory Ø ' .
+            $this->size2str((int) $memory_avg) .
             ' [' .
             $this->size2str((int) $memory_min) .
             '...' .
             $this->size2str((int) $memory_max) .
             '], ' .
-            'duration Ø ' . number_format($duration_avg, 2) . 'ms' .
+            'duration Ø ' .
+            $this->msec2str((int) $duration_avg) .
             ' [' .
-            number_format($duration_min, 2) . 'ms' .
+            $this->msec2str((int) $duration_min) .
             '...' .
-            number_format($duration_max, 2) . 'ms' .
+            $this->msec2str((int) $duration_max) .
             '], ' .
             'count=' . $cnt;
             $this->SendDebug(__FUNCTION__, $s, 0);
@@ -3123,18 +3150,28 @@ trait StubsCommonLib
             '...' .
             $this->size2str((int) $memory_max) .
             ']), ' .
-            'duration=' . number_format($duration, 2) . 'ms' .
+            'duration=' . $this->msec2str((int) $duration) .
             ' (' .
-            'Ø ' . number_format($duration_avg, 2) . 'ms' .
+            'Ø ' . $this->msec2str((int) $duration_avg) .
             ' [' .
-            number_format($duration_min, 2) . 'ms' .
+            $this->msec2str((int) $duration_min) .
             '...' .
-            number_format($duration_max, 2) . 'ms' .
+            $this->msec2str((int) $duration_max) .
             ']), ' .
             'count=' . $cnt;
         $this->SendDebug(__FUNCTION__, $s, 0);
 
         $this->WriteAttributeString('ModuleStats', json_encode($stats));
+    }
+
+    private function ClearModuleStats()
+    {
+        @$stats = $this->ReadAttributeString('ModuleStats');
+        if ($stats === false) {
+            return;
+        }
+
+        $this->WriteAttributeString('ModuleStats', json_encode([]));
     }
 
     private function RegexpPattern(string $type, bool $add_empty)

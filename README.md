@@ -46,6 +46,7 @@ inspired by Nall-chan (https://github.com/Nall-chan/IPSSqueezeBox/blob/6bbdccc23
 `string bool2str(bool $bval)`<br>
 `string format_float(float $number, int $dec_points)`<br>
 `string seconds2duration(float $sec)`<br>
+`string msec2str(int $msec)`<br>
 `string size2str(int $size)`<br>
 `string bitmap2str(int $val, int $len)`<br>
 `int bit_set(int $val, int $bit)`<br>
@@ -144,6 +145,8 @@ dazu bei Bedarf in module.php: `string CompleteModuleUpdate(array $oldInfo, arra
 `array GetApiCallStatsFormItem()`<br>
 `void ShowApiCallStats()`<br>
 `void ClearApiCallStats()`<br>
+
+`void ClearModuleStats()`<br>
 
 `void SetupDataCache(int $expires_in)`<br>
 `void RefreshDataCache()`<br>
