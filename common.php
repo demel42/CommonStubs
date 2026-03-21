@@ -1312,6 +1312,7 @@ trait StubsCommonLib
     {
         $inst = IPS_GetInstance($instID);
         $moduleID = $inst['ModuleInfo']['ModuleID'];
+        $cID = $inst['ConnectionID'];
 
         $actionIDs = [];
         $actions = json_decode(IPS_GetActions(), true);
@@ -1425,6 +1426,19 @@ trait StubsCommonLib
                     break;
             }
         }
+
+        if (IPS_InstanceExists($cID)) {
+            $inst = IPS_GetInstance($cID);
+            $moduleType = $inst['ModuleInfo']['ModuleType'];
+            $referencing[] = [
+                'ObjektID'   => $cID,
+                'ObjectType' => 'ParentInstance',
+                'ModuleType' => $moduleType,
+                'ObjectArea' => $this->Translate('Parent instance'),
+                'ObjectName' => IPS_GetName($cID) . ' (' . IPS_GetName(IPS_GetParent($cID)) . ')',
+            ];
+        }
+
         usort($referencing, [__CLASS__, 'cmp_refs']);
 
         $ucIDs = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}'); // Util Control
@@ -1452,6 +1466,11 @@ trait StubsCommonLib
                     case OBJECTTYPE_INSTANCE:
                         $inst = IPS_GetInstance($objID);
                         $moduleType = $inst['ModuleInfo']['ModuleType'];
+                        $cID = $inst['ConnectionID'];
+                        if ($cID == $instID) {
+                            $objectType = 'ChildInstance';
+                            $objectArea = $this->Translate('Child instance');
+                        }
                         $referencedBy[] = [
                             'ObjektID'   => $objID,
                             'ObjectType' => $objectType,

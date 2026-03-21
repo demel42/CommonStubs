@@ -66,6 +66,8 @@
 			"Last run": "letzte Ausführung",
 			"Timer information": "Timer-Information",
 			"Refresh panel": "Panel aktualisieren",
+			"Parent instance": "übergeordnete Instanz",
+			"Child instance": "verbundene Instanz",
 
 			"__actions__": "ModuleActivityPanel",
 			"Module activity": "Modul-Aktivitäten",
