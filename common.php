@@ -65,7 +65,7 @@ trait StubsCommonLib
         return $ret;
     }
 
-    private function CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, float $stepSize, int $digits, string $icon, $associations = null, bool $doReinstall = false)
+    private function CreateVarProfile(string $ident, int $varType, string $suffix, float $min, float $max, float $stepSize, int $digits, string $icon, ?array $associations = null, ?bool $doReinstall = false)
     {
         if ($doReinstall && IPS_VariableProfileExists($ident)) {
             IPS_DeleteVariableProfile($ident);
@@ -373,7 +373,7 @@ trait StubsCommonLib
         return $oldmode != $mode;
     }
 
-    private function GetArrayElem($data, string $var, $dflt, bool &$fnd = null)
+    private function GetArrayElem($data, string $var, $dflt, ?bool &$fnd = null)
     {
         $ret = $data;
         if (is_array($data)) {
@@ -506,7 +506,7 @@ trait StubsCommonLib
         return $result;
     }
 
-    private function LimitOutput($str, int $maxLength = null)
+    private function LimitOutput($str, ?int $maxLength = null)
     {
         $lim = IPS_GetOption('ScriptOutputBufferLimit');
         if (is_null($maxLength)) {
@@ -721,7 +721,7 @@ trait StubsCommonLib
         return $text;
     }
 
-    private function TranslateFormat(string $text, array $vars = null)
+    private function TranslateFormat(string $text, ?array $vars = null)
     {
         $s = $this->Translate($text);
         if ($vars != null) {
@@ -1209,7 +1209,7 @@ trait StubsCommonLib
         return $id >= 10000 && $id <= 59999;
     }
 
-    private function MaintainReferences(array $propertyNames = null)
+    private function MaintainReferences(?array $propertyNames = null)
     {
         $refs = $this->GetReferenceList();
         foreach ($refs as $ref) {
