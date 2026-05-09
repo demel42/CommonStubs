@@ -227,7 +227,7 @@ trait StubsCommonLib
     {
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
         $used = false;
-        $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}'); // WebHook Control
+        $ids = (array) IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}'); // WebHook Control
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
             foreach ($hooks as $hook) {
@@ -246,7 +246,7 @@ trait StubsCommonLib
     private function RegisterHook(string $ident)
     {
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
-        $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}'); // WebHook Control
+        $ids = (array) IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}'); // WebHook Control
         if (count($ids) > 0) {
             $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
             $found = false;
@@ -262,12 +262,64 @@ trait StubsCommonLib
                     break;
                 }
             }
-            if (!$found) {
-                $hooks[] = ['Hook' => $ident, 'TargetID' => $this->InstanceID];
+            if ($found == false) {
+                $hooks[] = [
+                    'Hook'     => $ident,
+                    'TargetID' => $this->InstanceID
+                ];
                 $this->SendDebug(__FUNCTION__, 'not found, create with TargetID ' . $this->InstanceID, 0);
             }
             IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
             IPS_ApplyChanges($ids[0]);
+        }
+    }
+
+    private function UnregisterHook(string $ident)
+    {
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
+        $ids = (array) IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}'); // WebHook Control
+        if (count($ids) > 0) {
+            $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
+            $changed = false;
+            foreach ($hooks as $index => $hook) {
+                if ($hook['Hook'] == $ident) {
+                    if ($hook['TargetID'] != $this->InstanceID) {
+                        $this->SendDebug(__FUNCTION__, 'ignore hook with foreign TargetID ' . $hook['TargetID'], 0);
+                    } else {
+                        $this->SendDebug(__FUNCTION__, 'delete hook with correct TargetID ' . $this->InstanceID, 0);
+                        array_splice($hooks, $index, 1);
+                        $changed = $true;
+                        break;
+                    }
+                }
+            }
+            if ($changed) {
+                IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
+                IPS_ApplyChanges($ids[0]);
+            }
+        }
+    }
+
+    private function CleanupHook()
+    {
+        $this->SendDebug(__FUNCTION__, '', 0);
+        $ids = (array) IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}'); // WebHook Control
+        if (count($ids) > 0) {
+            $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
+            $new_hooks = [];
+            $changed = false;
+            foreach ($hooks as $index => $hook) {
+                if ($hook['TargetID'] != $this->InstanceID) {
+                    $this->SendDebug(__FUNCTION__, 'delete hook ' . $hook['Hook'] . ' with correct TargetID ' . $this->InstanceID, 0);
+                    $changed = true;
+                } else {
+                    $new_hooks[] = $hook;
+                }
+            }
+            if ($changed) {
+                IPS_SetProperty($ids[0], 'Hooks', json_encode($new_hooks));
+                IPS_ApplyChanges($ids[0]);
+            }
         }
     }
 
@@ -312,7 +364,7 @@ trait StubsCommonLib
     {
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
         $used = false;
-        $ids = IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}'); // WebOAuth Control
+        $ids = (array) IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}'); // WebOAuth Control
         if (count($ids) > 0) {
             $clientID = json_decode(IPS_GetProperty($ids[0], 'ClientIDs'), true);
             foreach ($clientID as $clientID) {
@@ -331,7 +383,7 @@ trait StubsCommonLib
     private function RegisterOAuth(string $ident)
     {
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
-        $ids = IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}'); // WebOAuth Control
+        $ids = (array) IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}'); // WebOAuth Control
         if (count($ids) > 0) {
             $clientIDs = json_decode(IPS_GetProperty($ids[0], 'ClientIDs'), true);
             $found = false;
@@ -347,12 +399,64 @@ trait StubsCommonLib
                     $found = true;
                 }
             }
-            if (!$found) {
-                $clientIDs[] = ['ClientID' => $ident, 'TargetID' => $this->InstanceID];
+            if ($found == false) {
+                $clientIDs[] = [
+                    'ClientID' => $ident,
+                    'TargetID' => $this->InstanceID
+                ];
                 $this->SendDebug(__FUNCTION__, 'not found, create with TargetID ' . $this->InstanceID, 0);
             }
             IPS_SetProperty($ids[0], 'ClientIDs', json_encode($clientIDs));
             IPS_ApplyChanges($ids[0]);
+        }
+    }
+
+    private function UnegisterOAuth(string $ident)
+    {
+        $this->SendDebug(__FUNCTION__, 'ident=' . $ident, 0);
+        $ids = (array) IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}'); // WebOAuth Control
+        if (count($ids) > 0) {
+            $clientIDs = json_decode(IPS_GetProperty($ids[0], 'ClientIDs'), true);
+            $changed = false;
+            foreach ($clientIDs as $index => $clientID) {
+                if ($clientID['ClientID'] == $ident) {
+                    if ($clientID['TargetID'] != $this->InstanceID) {
+                        $this->SendDebug(__FUNCTION__, 'ignore clientID with foreign TargetID ' . $clientID['TargetID'], 0);
+                    } else {
+                        $this->SendDebug(__FUNCTION__, 'delete clientID with correct TargetID ' . $this->InstanceID, 0);
+                        array_splice($clientIDs, $index, 1);
+                        $changed = true;
+                        break;
+                    }
+                }
+            }
+            if ($changed) {
+                IPS_SetProperty($ids[0], 'ClientIDs', json_encode($clientIDs));
+                IPS_ApplyChanges($ids[0]);
+            }
+        }
+    }
+
+    private function CleanupOAuth()
+    {
+        $this->SendDebug(__FUNCTION__, '', 0);
+        $ids = (array) IPS_GetInstanceListByModuleID('{F99BF07D-CECA-438B-A497-E4B55F139D37}'); // WebOAuth Control
+        if (count($ids) > 0) {
+            $clientIDs = json_decode(IPS_GetProperty($ids[0], 'ClientIDs'), true);
+            $new_clientIDs = [];
+            $changed = false;
+            foreach ($clientIDs as $index => $clientID) {
+                if ($clientID['TargetID'] != $this->InstanceID) {
+                    $this->SendDebug(__FUNCTION__, 'delete clientID ' . $clientID['ClientID'] . ' with correct TargetID ' . $this->InstanceID, 0);
+                    $changed = true;
+                } else {
+                    $new_clientIDs[] = $clientID;
+                }
+            }
+            if ($changed) {
+                IPS_SetProperty($ids[0], 'ClientIDs', json_encode($new_clientIDs));
+                IPS_ApplyChanges($ids[0]);
+            }
         }
     }
 
@@ -732,7 +836,7 @@ trait StubsCommonLib
 
     private function GetSystemLocation()
     {
-        $ids = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}'); // Location Control
+        $ids = (array) IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}'); // Location Control
         if (count($ids) > 0) {
             if (IPS_GetKernelVersion() < 5.0) {
                 $location = [
@@ -792,7 +896,7 @@ trait StubsCommonLib
 
     private function GetConnectUrl()
     {
-        $ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}'); // Connect Control
+        $ids = (array) IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}'); // Connect Control
         if (count($ids) > 0) {
             return CC_GetConnectURL($ids[0]);
         }
@@ -801,7 +905,7 @@ trait StubsCommonLib
 
     private function GetConnectStatus()
     {
-        $ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}'); // Connect Control
+        $ids = (array) IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}'); // Connect Control
         if (count($ids) > 0) {
             return IPS_GetInstance($ids[0])['InstanceStatus'];
         }
@@ -858,7 +962,7 @@ trait StubsCommonLib
             'Date'        => $lib['Date'],
         ];
 
-        $scIDs = IPS_GetInstanceListByModuleID('{F45B5D1F-56AE-4C61-9AB2-C87C63149EC3}'); // Store Control
+        $scIDs = (array) IPS_GetInstanceListByModuleID('{F45B5D1F-56AE-4C61-9AB2-C87C63149EC3}'); // Store Control
         if (count($scIDs) > 0) {
             $scList = SC_GetModuleInfoList($scIDs[0]);
             foreach ($scList as $sc) {
@@ -879,7 +983,7 @@ trait StubsCommonLib
                 }
             }
         }
-        $mcIDs = IPS_GetInstanceListByModuleID('{B8A5067A-AFC2-3798-FEDC-BCD02A45615E}'); // Module Control
+        $mcIDs = (array) IPS_GetInstanceListByModuleID('{B8A5067A-AFC2-3798-FEDC-BCD02A45615E}'); // Module Control
         if (count($mcIDs) > 0) {
             $mcList = MC_GetModuleList($mcIDs[0]);
             foreach ($mcList as $mc) {
@@ -931,7 +1035,7 @@ trait StubsCommonLib
         $m[] = 'date=' . $d;
 
         $src = '';
-        $scIDs = IPS_GetInstanceListByModuleID('{F45B5D1F-56AE-4C61-9AB2-C87C63149EC3}'); // Store Control
+        $scIDs = (array) IPS_GetInstanceListByModuleID('{F45B5D1F-56AE-4C61-9AB2-C87C63149EC3}'); // Store Control
         if (count($scIDs) > 0) {
             $scList = SC_GetModuleInfoList($scIDs[0]);
             foreach ($scList as $sc) {
@@ -952,7 +1056,7 @@ trait StubsCommonLib
                 }
             }
         }
-        $mcIDs = IPS_GetInstanceListByModuleID('{B8A5067A-AFC2-3798-FEDC-BCD02A45615E}'); // Module Control
+        $mcIDs = (array) IPS_GetInstanceListByModuleID('{B8A5067A-AFC2-3798-FEDC-BCD02A45615E}'); // Module Control
         if (count($mcIDs) > 0) {
             $mcList = MC_GetModuleList($mcIDs[0]);
             foreach ($mcList as $mc) {
@@ -1328,7 +1432,7 @@ trait StubsCommonLib
 
         // von Instanz referenzierte Objekte
         $referencing = [];
-        $refIDs = IPS_GetReferenceList($instID);
+        $refIDs = (array) IPS_GetReferenceList($instID);
         foreach ($refIDs as $objID) {
             if (IPS_ObjectExists($objID) == false) {
                 continue;
@@ -1441,7 +1545,7 @@ trait StubsCommonLib
 
         usort($referencing, [__CLASS__, 'cmp_refs']);
 
-        $ucIDs = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}'); // Util Control
+        $ucIDs = (array) IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}'); // Util Control
 
         // Instanz referenziert durch
         $referencedBy = [];
@@ -2032,7 +2136,7 @@ trait StubsCommonLib
             }
         }
 
-        $stack = isset($_IPS['stack']) ? $_IPS['stack'] : [];
+        $stack = isset($_IPS['stack']) ? (array) $_IPS['stack'] : [];
         $c = count($stack);
         if ($c == 0 || ($stack[$c - 1]['class'] != __CLASS__ || $stack[$c - 1]['func'] != $func)) {
             $stack[] = [
@@ -2064,7 +2168,7 @@ trait StubsCommonLib
 
     private function PopCallChain(string $func)
     {
-        $stack = isset($_IPS['stack']) ? $_IPS['stack'] : [];
+        $stack = isset($_IPS['stack']) ? (array) $_IPS['stack'] : [];
         $c = count($stack);
         if ($c > 0 && $stack[$c - 1]['class'] == __CLASS__ && $stack[$c - 1]['func'] == $func) {
             array_pop($stack);
@@ -2083,7 +2187,7 @@ trait StubsCommonLib
     {
         $cause = isset($_IPS['ENVIRONMENT']) ? $_IPS['ENVIRONMENT'] : $_IPS['SENDER'];
         if (in_array($cause, ['PHPModule', 'RunScript'])) {
-            $stack = isset($_IPS['stack']) ? $_IPS['stack'] : [];
+            $stack = isset($_IPS['stack']) ? (array) $_IPS['stack'] : [];
             $c = count($stack);
             if ($c > 0) {
                 $cause = $stack[$c - 1]['func'];
@@ -2603,7 +2707,7 @@ trait StubsCommonLib
             $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return false;
         }
-        $archivIDs = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}'); // Archive Control
+        $archivIDs = (array) IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}'); // Archive Control
         if (count($archivIDs) == 0) {
             return false;
         }
@@ -2623,7 +2727,7 @@ trait StubsCommonLib
             $this->SendDebug(__FUNCTION__, 'missing variable ' . $ident, 0);
             return false;
         }
-        $archivIDs = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}'); // Archive Control
+        $archivIDs = (array) IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}'); // Archive Control
         if (count($archivIDs) == 0) {
             return false;
         }
