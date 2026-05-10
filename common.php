@@ -309,7 +309,7 @@ trait StubsCommonLib
             $new_hooks = [];
             $changed = false;
             foreach ($hooks as $index => $hook) {
-                if ($hook['TargetID'] != $this->InstanceID) {
+                if ($hook['TargetID'] == $this->InstanceID) {
                     $this->SendDebug(__FUNCTION__, 'delete hook ' . $hook['Hook'] . ' with correct TargetID ' . $this->InstanceID, 0);
                     $changed = true;
                 } else {
@@ -446,7 +446,7 @@ trait StubsCommonLib
             $new_clientIDs = [];
             $changed = false;
             foreach ($clientIDs as $index => $clientID) {
-                if ($clientID['TargetID'] != $this->InstanceID) {
+                if ($clientID['TargetID'] == $this->InstanceID) {
                     $this->SendDebug(__FUNCTION__, 'delete clientID ' . $clientID['ClientID'] . ' with correct TargetID ' . $this->InstanceID, 0);
                     $changed = true;
                 } else {
